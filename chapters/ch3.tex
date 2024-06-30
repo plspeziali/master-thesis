@@ -273,7 +273,7 @@ An MDP is defined by a tuple \( \langle \mathcal{S}, \mathcal{A}, P, R, \gamma \
 let's break down the components:
 \begin{itemize}
     \item \( \mathcal{S} \): finite set of Markov states $s$
-    \item \( \mathcal{A} \): finite set of actions $as$
+    \item \( \mathcal{A} \): finite set of actions $a$
     \item \( P \): state transition model for each action,
     a probability matrix that specifies $$p(s_t+1 = s'|s_t=s, a_t=a)$$
     \item \( R \): reward function
@@ -355,17 +355,43 @@ Our focus will be on the latter.
 
 Model-free methods can be categorized into two main approaches
 for representing and training agents:
+\begin{itemize}
+    \item \textbf{Policy Optimization:} explicitly represents a policy
+    as \( \pi_{\theta}(a \mid s) \) and optimizes the parameters \( \theta \)
+    either directly via gradient ascent on the performance objective
+    \( J(\pi_{\theta}) \) or indirectly by maximizing local approximations
+    of \( J(\pi_{\theta}) \).
+    Typically, this optimization is performed \textbf{on-policy},
+    meaning that each update uses data collected while the agent is acting
+    according to the most recent version of the policy.
 
-\textbf{Policy Optimization:} This approach explicitly represents a policy
-as \( \pi_{\theta}(a \mid s) \) and optimizes the parameters \( \theta \)
-either directly via gradient ascent on the performance objective \( J(\pi_{\theta}) \), or indirectly by maximizing local approximations of \( J(\pi_{\theta}) \). Typically, this optimization is performed on-policy, meaning that each update uses data collected while the agent is acting according to the most recent version of the policy.
+    \item \textbf{Q-Learning:} involves learning an approximator
+    \( Q_{\theta}(s,a) \) for the optimal action-value function \( Q^*(s,a) \).
+    Unlike policy optimization, Q-learning is generally performed \textbf{off-policy},
+    allowing updates to use data collected at any time during training,
+    irrespective of the agent's policy at the time of data collection.
+    The corresponding policy is derived from the relationship between
+    \( Q^* \) and \( \pi^* \), where the actions taken by the Q-learning
+    agent are determined by
+    $$ a(s) = \arg \max_a Q_{\theta}(s,a) $$
+    An example of a Q-learning algorithm is Deep Q-Network (\textbf{DQN}),
+    which uses a deep neural network to approximate the optimal action-value
+    function in environments with large state spaces,
+    and its variants such as Double DQN (\textbf{DDQN}) and
+    Dueling Double DQN (\textbf{D3QN}).
 
-\textbf{Q-Learning:} This approach involves learning an approximator \( Q_{\theta}(s,a) \) for the optimal action-value function \( Q^*(s,a) \). The optimization usually relies on an objective function derived from the Bellman equation. Unlike policy optimization, Q-learning is generally performed off-policy, allowing updates to use data collected at any time during training, irrespective of the agent's policy at the time of data collection. The corresponding policy is derived from the relationship between \( Q^* \) and \( \pi^* \), where the actions taken by the Q-learning agent are determined by
+\end{itemize}
 
-\[
-a(s) = \arg \max_a Q_{\theta}(s,a).
-\]
+There are also hybrid approaches that combine elements
+of both policy optimization and Q-learning.
+In this spectrum of algorithms we can find 
+\textbf{actor-critic methods}, which consist of two components:
+an \textbf{actor} that makes actions and a \textbf{critic} that evaluates them.
+An example of an actor-critic algorithm is Twin-Delayed DDPG (\textbf{TD3}).
 
+If samples are collected during training the reinforcement learning is
+considered \textbf{online}, otherwise,
+if the training set is fixed, it is \textbf{offline}.
 
 \section{Causal Inference}
 
