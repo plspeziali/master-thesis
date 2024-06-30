@@ -120,7 +120,7 @@ The goal is for the agent to reach a target cell.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.5\textwidth]{figures/ch3/2.rl.png}
+    \includegraphics[width=.42\textwidth]{figures/ch3/2.rl.png}
     \caption{A simple reinforcement learning task}
     \vspace{-10px}
     \caption*{\scriptsize{Source: \cite{zhao2024RLBook}}}
@@ -184,7 +184,8 @@ indicating the agent's behavior in the environment.
 In other words, a policy tells the agent what action to take
 at each state.
 
-Mathematically, policies can be described by conditional probabilities. Denote the policy in Figure 1.4 as \( \pi(a \mid s) \), a conditional probability distribution function defined for every state. For example, the policy for \( s_1 \) is:
+Mathematically, policies can be described by conditional probabilities.
+For example, the policy for \( s_1 \) is:
 \[
 \begin{aligned}
 \pi(a_1 \mid s_1) &= 0, \\
@@ -194,9 +195,13 @@ Mathematically, policies can be described by conditional probabilities. Denote t
 \pi(a_5 \mid s_1) &= 0,
 \end{aligned}
 \]
-indicating that the probability of taking action \( a_2 \) at state \( s_1 \) is one, and the probabilities of taking other actions are zero.
+indicating that the probability of taking action \( a_2 \) at state \( s_1 \)
+is one, and the probabilities of taking other actions are zero.
 
-The above policy is deterministic, but policies may generally be stochastic. For instance, the policy in Figure 1.5 is stochastic: at state \( s_1 \), the agent may take actions to move either rightward or downward, each with a probability of 0.5. In this case, the policy for \( s_1 \) is:
+The above policy is deterministic, but policies may generally be stochastic.
+For instance, let's assume that at state \( s_1 \)
+the agent may take actions to move either rightward or downward,
+each with a probability of 0.5. In this case, the policy for \( s_1 \) is:
 \[
 \begin{aligned}
 \pi(a_1 \mid s_1) &= 0, \\
@@ -209,8 +214,10 @@ The above policy is deterministic, but policies may generally be stochastic. For
 
 After executing an action at a state, the agent receives a
 reward \( r \) as feedback from the environment.
-The \textbf{reward} is a function of the state \( s \) and action \( a \),
-denoted as \( r(s, a) \) and it can be positive, negative, or zero.
+The \textbf{reward} is a function of the state and action
+which predicts immediate reward and is denoted as:
+\[ R(s_t=s, a_t=a) = \mathbb{E} [r_t | s_t = s, a_t = a] \]
+and it can be positive, negative, or zero.
 Different rewards influence the policy the agent learns.
 Generally, a positive reward encourages the agent to take the
 corresponding action, while a negative reward discourages it.
@@ -226,73 +233,58 @@ the greatest total reward.
 A \textbf{trajectory} is a state-action-reward chain.
 For example, the agent in our example may follow this trajectory:
 \[ s_1 \xrightarrow{a_2, r=0} s_2 \xrightarrow{a_3, r=0} s_5 \xrightarrow{a_3, r=0} s_8 \xrightarrow{a_2, r=1} s_9. \]
-The return of this trajectory is the sum of all rewards collected along it:
+The \textbf{return} of this trajectory is the sum of all rewards collected along it,
+in the example above:
 \[\text{return} = 0+0+0+1=1\]
-\textbf{Returns}, also called total rewards or cumulative rewards,
+Returns, also called total rewards or cumulative rewards,
 are used to evaluate policies.
 Returns can also be defined for infinitely long trajectories, which may diverge.
 Therefore, we introduce the concept of \textbf{discounted return} for infinitely
-long trajectories. The discounted return is the sum of the discounted rewards:
+long trajectories. The discounted return is the sum of the rewards from $t$ to $T$ (final step):
 \[
-\text{discounted return} = 0 + \gamma \cdot 0 + \gamma^2 \cdot 0 + \gamma^3 \cdot 1 + \gamma^4 \cdot 1 + \gamma^5 \cdot 1 + \ldots,
+G_t \doteq R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \ldots = \sum_{k=0}^{\infty} \gamma^k R_{t+k+1}
 \]
-where \( \gamma \in (0, 1) \) is the discount rate.
+where \( \gamma \in [0, 1] \) is the \textbf{discount factor}.
 If \( \gamma \) is close to 0, the agent emphasizes near-future rewards,
 resulting in a short-sighted policy. If \( \gamma \) is close to 1,
 the agent emphasizes far-future rewards.
 
-When following a policy, the agent may stop at \textbf{terminal states},
-resulting in a trajectory called an \textbf{episode}.
+When $T$ is finite, we call the task episodic and each sequence
+up to the \textbf{terminal state} is an \textbf{episode}. Otherwise, we refer
+to \textbf{continuing tasks}.
 
-The framework of \textbf{Markov Decision Processes} (MDPs)
+The \textbf{Markov Decision Processes} (MDPs),
+a general framework for describing stochastic dynamical systems,
 allows us to formally presents these concepts.
-An MDP is a general framework for describing stochastic dynamical systems
-and its key components are:
+The \textbf{Markov property} refers to the \textbf{memoryless} property of a stochastic process. Mathematically, it means that
+\[
+\begin{aligned}
+p(s_{t+1} \mid s_t, a_t, s_{t-1}, a_{t-1}, \ldots, s_0, a_0) &= p(s_{t+1} \mid s_t, a_t), \\
+p(r_{t+1} \mid s_t, a_t, s_{t-1}, a_{t-1}, \ldots, s_0, a_0) &= p(r_{t+1} \mid s_t, a_t),
+\end{aligned}
+\]
+where \( t \) represents the current time step and \( t + 1 \) represents the next time step.
+This indicates that the next state or reward depends only on the current
+state and action and is independent of the previous ones.
+
+\vspace{3cm}
+
+An MDP is defined by a tuple \( \langle \mathcal{S}, \mathcal{A}, P, R, \gamma \rangle \),
+let's break down the components:
 \begin{itemize}
-    \item \textbf{Sets:}
-    \begin{itemize}
-        \item \textbf{State space:} The set of all states,
-        denoted as \( \mathcal{S} \).
-        \item \textbf{Action space:} The set of actions,
-        denoted as \( \mathcal{A}(s) \), associated with each state
-        \( s \in \mathcal{S} \).
-        \item \textbf{Reward set:} The set of rewards,
-        denoted as \( \mathcal{R}(s, a) \), associated with each state-action
-        pair \((s, a)\).
-    \end{itemize}
-    \item \textbf{Model:}
-    \begin{itemize}
-        \item \textbf{State transition probability:} At state \( s \),
-        when taking action \( a \), the probability of transitioning to state
-        \( s' \) is \( p(s' \mid s, a) \).\\
-        It holds that \( \sum_{s' \in \mathcal{S}} p(s' \mid s, a) = 1 \;\;
-        \forall (s, a)\).
-        \item \textbf{Reward probability:} At state \( s \),
-        when taking action \( a \), the probability of obtaining reward
-        \( r \) is \( p(r \mid s, a) \). \\
-        It holds that \( \sum_{r \in \mathcal{R}(s,a)} p(r \mid s, a) = 1 \;\;
-        \forall (s, a)\).
-    \end{itemize}
-    \item \textbf{Policy:} At state \( s \), the probability of choosing action
-    \( a \) is \( \pi(a \mid s) \).\\
-    It holds that \( \sum_{a \in \mathcal{A}(s)} \pi(a \mid s) = 1 \;\; \forall s \in \mathcal{S} \).
-    \item \textbf{Markov property:} The Markov property refers to the \textbf{memoryless} property of a stochastic process. Mathematically, it means that
-    \[
-    \begin{aligned}
-    p(s_{t+1} \mid s_t, a_t, s_{t-1}, a_{t-1}, \ldots, s_0, a_0) &= p(s_{t+1} \mid s_t, a_t), \\
-    p(r_{t+1} \mid s_t, a_t, s_{t-1}, a_{t-1}, \ldots, s_0, a_0) &= p(r_{t+1} \mid s_t, a_t),
-    \end{aligned}
-    \]
-    where \( t \) represents the current time step and \( t + 1 \) represents the next time step.
-    This indicates that the next state or reward depends only on the current
-    state and action and is independent of the previous ones.
+    \item \( \mathcal{S} \): finite set of Markov states $s$
+    \item \( \mathcal{A} \): finite set of actions $as$
+    \item \( P \): state transition model for each action,
+    a probability matrix that specifies $$p(s_t+1 = s'|s_t=s, a_t=a)$$
+    \item \( R \): reward function
+    $$ R(s_t=s, a_t=a) = \mathbb{E} [r_t | s_t = s, a_t = a] $$
+    \item \( \gamma \): discount factor $0 \leq \gamma \leq 1$
 \end{itemize}
 
 When the policy in a MDP is fixed, it reduces to a \textbf{Markov Process} (MP),
 this transformation simplifies the MDP by eliminating the decision-making aspect. 
 A Markov process is referred to as a \textbf{Markov Chain} if it operates in discrete
 time and the number of states is either finite or countable.
-
 
 \begin{figure}[h]
     \centering
@@ -303,6 +295,77 @@ time and the number of states is either finite or countable.
     \caption*{\scriptsize{Source: \cite{zhao2024RLBook}}}
     \label{fig:mdp}
 \end{figure}
+
+
+\subsection{Reinforcement Learning Algorithms}
+
+In \cite{openaiPartKinds}, the landscape of algorithms in modern reinforcement
+learning is explored.
+
+The algorithms used in reinforcement learning almost always rely on
+\textbf{value functions}.
+The \textbf{value} is the expected return if the agent starts in
+that state or state-action pair and then follows a specific policy indefinitely.
+
+\vspace{5cm}
+
+There are four primary value functions to consider:
+
+\begin{itemize}
+    \item \textbf{On-Policy Value Function, \( V^{\pi}(s) \)}: This function
+    represents the expected return if the agent starts in state \( s \)
+    and acts according to the policy \( \pi \):
+    $$ V^{\pi}(s) = \mathbb{E}_{\tau \sim \pi} \left[ R(\tau) \mid s_0 = s \right] $$
+    \item \textbf{On-Policy Action-Value Function, \( Q^{\pi}(s,a) \)}:
+    This function gives the expected return if the agent starts in state \( s \),
+    takes an arbitrary action \( a \), and then always follows the policy \( \pi \):
+    $$ Q^{\pi}(s,a) = \mathbb{E}_{\tau \sim \pi} \left[ R(\tau) \mid s_0 = s, a_0 = a \right] $$
+    \item \textbf{Optimal Value Function, \( V^*(s) \):} This function provides
+    the expected return if the agent starts in state \( s \) and follows the
+    optimal policy for the environment:
+    $$ V^*(s) = \max_{\pi} \mathbb{E}_{\tau \sim \pi} \left[ R(\tau) \mid s_0 = s \right] $$
+    \item \textbf{Optimal Action-Value Function, \( Q^*(s,a) \):} This function
+    represents the expected return if the agent starts in state \( s \),
+    takes an arbitrary action \( a \), and then follows the optimal policy for the environment:
+    $$ Q^*(s,a) = \max_{\pi} \mathbb{E}_{\tau \sim \pi} \left[ R(\tau) \mid s_0 = s, a_0 = a \right] $$
+\end{itemize}
+
+Figure \ref{fig:mdp}
+presents a partial taxonomy of the modern reinforcement learning algorithms.
+One key distinction is whether the agent utilizes (or learns) a model of
+the environment. A model, in this context, refers to a function that predicts
+state transitions and rewards.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.8\textwidth]{figures/ch3/4.rlalg.png}
+    \caption{Partial taxonomy of algorithms in modern RL.}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{openaiPartKinds}}}
+    \label{fig:mdp}
+\end{figure}
+
+The primary advantage of having a model is that it enables the agent
+to plan by predicting future states and rewards.
+However, the major drawback is that an accurate model of the environment
+is often unavailable to the agent.
+Algorithms which use a model are known as \textbf{model-based} methods,
+while those that do not are referred to as \textbf{model-free} methods.
+Our focus will be on the latter.
+
+Model-free methods can be categorized into two main approaches
+for representing and training agents:
+
+\textbf{Policy Optimization:} This approach explicitly represents a policy
+as \( \pi_{\theta}(a \mid s) \) and optimizes the parameters \( \theta \)
+either directly via gradient ascent on the performance objective \( J(\pi_{\theta}) \), or indirectly by maximizing local approximations of \( J(\pi_{\theta}) \). Typically, this optimization is performed on-policy, meaning that each update uses data collected while the agent is acting according to the most recent version of the policy.
+
+\textbf{Q-Learning:} This approach involves learning an approximator \( Q_{\theta}(s,a) \) for the optimal action-value function \( Q^*(s,a) \). The optimization usually relies on an objective function derived from the Bellman equation. Unlike policy optimization, Q-learning is generally performed off-policy, allowing updates to use data collected at any time during training, irrespective of the agent's policy at the time of data collection. The corresponding policy is derived from the relationship between \( Q^* \) and \( \pi^* \), where the actions taken by the Q-learning agent are determined by
+
+\[
+a(s) = \arg \max_a Q_{\theta}(s,a).
+\]
+
 
 \section{Causal Inference}
 
