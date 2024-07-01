@@ -9,7 +9,7 @@ these models possess useful analytical and computational properties,
 but their practical applicability is constrained 
 since their capacity is limited to linear functions
 and they cannot understand the interaction between any two input variables.
-This leads to problems such as the curse of dimensionality,
+This leads to problems such as the \textbf{curse of dimensionality},
 where the number of possible interactions between variables grows exponentially
 with the number of input variables.
 To address large-scale problems, it is essential to adapt the basis functions
@@ -23,7 +23,7 @@ The most successful example of this approach in pattern recognition is the
 also known as the multilayer perceptron (MLP).
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.9\textwidth]{figures/ch3/1.mlp.png}
+    \includegraphics[width=.75\textwidth]{figures/ch3/1.mlp.png}
     \caption{A feed-forward neural network with two hidden layers}
     \vspace{-10px}
     \caption*{\scriptsize{Source: \href{https://brilliant.org/wiki/feedforward-neural-networks/}{Brilliant}}}
@@ -51,9 +51,17 @@ hidden layers to approximate \( f^* \).
 Every layer of the network computes a non-linear transformation of the
 previous layer's activations, this way a complex function can be
 approximated by composing simpler functions, one for each layer.
-Layers are composed of a set of units, where each unit is a node that
+Layers are composed of a set of \textbf{units}, where each unit is a node that
 computes a non-linear function of the weighted sum of its inputs
 and is only connected to units in the previous and the following layer.
+
+In order to train the network and update the weights, MLPs use the
+\textbf{backpropagation} technique, which computes the gradient of the
+loss function with respect to the weights of the network.
+The weights are then updated using an optimization algorithm such as
+\textbf{stochastic gradient descent} (SGD)
+or one of its adaptive variants like \textbf{Adam},
+whose hyperparameters are tuned according to the task during training.
 
 A feedforward network is called a \textbf{deep neural network} if it has
 more than one hidden layer, the branch of machine learning that studies
@@ -77,7 +85,9 @@ The question then becomes how to choose the mapping \( \phi \).
 
 The strategy of deep learning is to learn \( \phi \):
 in this approach, we use a model
-\[ y = f(x; \theta, w) = \phi(x; \theta)^\top w \]
+\begin{equation}
+y = f(x; \theta, w) = \phi(x; \theta)^\top w
+\end{equation}
 Here, we have parameters \( \theta \) that are used to learn \( \phi \)
 from a broad class of functions, and parameters \( w \) that map \( \phi(x) \)
 to the desired output.
@@ -216,7 +226,9 @@ After executing an action at a state, the agent receives a
 reward \( r \) as feedback from the environment.
 The \textbf{reward} is a function of the state and action
 which predicts immediate reward and is denoted as:
-\[ R(s_t=s, a_t=a) = \mathbb{E} [r_t | s_t = s, a_t = a] \]
+\begin{equation}
+R(s_t=s, a_t=a) = \mathbb{E} [r_t | s_t = s, a_t = a]
+\end{equation}
 and it can be positive, negative, or zero.
 Different rewards influence the policy the agent learns.
 Generally, a positive reward encourages the agent to take the
@@ -241,9 +253,9 @@ are used to evaluate policies.
 Returns can also be defined for infinitely long trajectories, which may diverge.
 Therefore, we introduce the concept of \textbf{discounted return} for infinitely
 long trajectories. The discounted return is the sum of the rewards from $t$ to $T$ (final step):
-\[
+\begin{equation}
 G_t \doteq R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \ldots = \sum_{k=0}^{\infty} \gamma^k R_{t+k+1}
-\]
+\end{equation}
 where \( \gamma \in [0, 1] \) is the \textbf{discount factor}.
 If \( \gamma \) is close to 0, the agent emphasizes near-future rewards,
 resulting in a short-sighted policy. If \( \gamma \) is close to 1,
@@ -257,12 +269,12 @@ The \textbf{Markov Decision Processes} (MDPs),
 a general framework for describing stochastic dynamical systems,
 allows us to formally presents these concepts.
 The \textbf{Markov property} refers to the \textbf{memoryless} property of a stochastic process. Mathematically, it means that
-\[
+\begin{equation}
 \begin{aligned}
 p(s_{t+1} \mid s_t, a_t, s_{t-1}, a_{t-1}, \ldots, s_0, a_0) &= p(s_{t+1} \mid s_t, a_t), \\
 p(r_{t+1} \mid s_t, a_t, s_{t-1}, a_{t-1}, \ldots, s_0, a_0) &= p(r_{t+1} \mid s_t, a_t),
 \end{aligned}
-\]
+\end{equation}
 where \( t \) represents the current time step and \( t + 1 \) represents the next time step.
 This indicates that the next state or reward depends only on the current
 state and action and is independent of the previous ones.
@@ -315,19 +327,27 @@ There are four primary value functions to consider:
     \item \textbf{On-Policy Value Function, \( V^{\pi}(s) \)}: This function
     represents the expected return if the agent starts in state \( s \)
     and acts according to the policy \( \pi \):
-    $$ V^{\pi}(s) = \mathbb{E}_{\tau \sim \pi} \left[ R(\tau) \mid s_0 = s \right] $$
+    \begin{equation}
+    V^{\pi}(s) = \mathbb{E}_{\tau \sim \pi} \left[ R(\tau) \mid s_0 = s \right]
+    \end{equation}
     \item \textbf{On-Policy Action-Value Function, \( Q^{\pi}(s,a) \)}:
     This function gives the expected return if the agent starts in state \( s \),
     takes an arbitrary action \( a \), and then always follows the policy \( \pi \):
-    $$ Q^{\pi}(s,a) = \mathbb{E}_{\tau \sim \pi} \left[ R(\tau) \mid s_0 = s, a_0 = a \right] $$
+    \begin{equation}
+    Q^{\pi}(s,a) = \mathbb{E}_{\tau \sim \pi} \left[ R(\tau) \mid s_0 = s, a_0 = a \right]
+    \end{equation}
     \item \textbf{Optimal Value Function, \( V^*(s) \):} This function provides
     the expected return if the agent starts in state \( s \) and follows the
     optimal policy for the environment:
-    $$ V^*(s) = \max_{\pi} \mathbb{E}_{\tau \sim \pi} \left[ R(\tau) \mid s_0 = s \right] $$
+    \begin{equation}
+    V^*(s) = \max_{\pi} \mathbb{E}_{\tau \sim \pi} \left[ R(\tau) \mid s_0 = s \right]
+    \end{equation}
     \item \textbf{Optimal Action-Value Function, \( Q^*(s,a) \):} This function
     represents the expected return if the agent starts in state \( s \),
     takes an arbitrary action \( a \), and then follows the optimal policy for the environment:
-    $$ Q^*(s,a) = \max_{\pi} \mathbb{E}_{\tau \sim \pi} \left[ R(\tau) \mid s_0 = s, a_0 = a \right] $$
+    \begin{equation}
+    Q^*(s,a) = \max_{\pi} \mathbb{E}_{\tau \sim \pi} \left[ R(\tau) \mid s_0 = s, a_0 = a \right]
+    \end{equation}
 \end{itemize}
 
 Figure \ref{fig:mdp}
@@ -373,7 +393,9 @@ for representing and training agents:
     The corresponding policy is derived from the relationship between
     \( Q^* \) and \( \pi^* \), where the actions taken by the Q-learning
     agent are determined by
-    $$ a(s) = \arg \max_a Q_{\theta}(s,a) $$
+    \begin{equation}
+    a(s) = \arg \max_a Q_{\theta}(s,a)
+    \end{equation}
     An example of a Q-learning algorithm is Deep Q-Network (\textbf{DQN}),
     which uses a deep neural network to approximate the optimal action-value
     function in environments with large state spaces,
@@ -393,8 +415,50 @@ If samples are collected during training the reinforcement learning is
 considered \textbf{online}, otherwise,
 if the training set is fixed, it is \textbf{offline}.
 
+\section{Generative Adversarial Networks}
+
+\textbf{Generative Adversarial Networks} (GANs) is a framework
+for estimating generative models via an adversarial process,
+initially introduced by \cite{goodfellow2014}.
+This framework involves training two models:
+a \textbf{generative} model \( G \), which captures the data
+distribution, and a \textbf{discriminative} model \( D \),
+which predicts samples as either originating from the true
+data distribution or the generative model.
+The training objective for \( G \) is to maximize
+the likelihood of \( D \) making incorrect classifications.
+This adversarial process can be conceptualized as a minimax two-player game.
+In the theoretical space of arbitrary functions \( G \) and \( D \),
+a unique solution exists where \( G \) accurately
+recovers the training data distribution and \( D \) outputs $\frac{1}{2}$
+for all inputs (in other words, it reaches maximum uncertainty).
+When \( G \) and \( D \) are defined by multilayer perceptrons,
+the entire system can be trained using backpropagation.
+
+To learn the generator's distribution \( p_g \)
+over data \( x \), we define a prior \( p_z(z) \) on input noise variables
+$z \in \Omega_z$, called \textbf{latent distribution},
+and represent a mapping to the data space as
+\( G(z; \theta_g) \), where \( G: \Omega_z \rightarrow \Omega_x \)
+is a differentiable function parameterized by \( \theta_g \).
+Additionally, we define a second network
+\( D(x; \theta_d) \) that outputs a single scalar,
+representing the probability that \( x \) originated
+from the true data distribution $p_x$ rather than from \( p_g \).
+The discriminative model \( D \) is trained to maximize
+the probability of correctly labeling both the training
+examples and the samples generated by \( G \).
+Simultaneously, the generative model \( G \) is trained to minimize
+\( \log(1 - D(G(z))) \).
+
+Formally, \( D \) and \( G \) engage in the following
+two-player minimax game with the value function \( V(G, D) \):
+\begin{equation}
+\min_G \max_D V(D, G) = \mathbb{E}_{x \sim p_{\text{data}}(x)}[\log D(x)] + \mathbb{E}_{z \sim p_z(z)}[\log (1 - D(G(z)))].
+\end{equation}
+
+
+
 \section{Causal Inference}
 
 \cite{Neal_2020a}
-
-\section{Generative Adversarial Networks}
