@@ -282,7 +282,7 @@ state and action and is independent of the previous ones.
 \vspace{3cm}
 
 An MDP is defined by a tuple \( \langle \mathcal{S}, \mathcal{A}, P, R, \gamma \rangle \),
-let's break down the components:
+let us break down the components:
 \begin{itemize}
     \item \( \mathcal{S} \): finite set of Markov states $s$
     \item \( \mathcal{A} \): finite set of actions $a$
@@ -415,7 +415,7 @@ If samples are collected during training the reinforcement learning is
 considered \textbf{online}, otherwise,
 if the training set is fixed, it is \textbf{offline}.
 
-\section{Generative Adversarial Networks}
+\section{Generative Adversarial Networks (GANs)}
 
 \textbf{Generative Adversarial Networks} (GANs) is a framework
 for estimating generative models via an adversarial process,
@@ -437,9 +437,9 @@ the entire system can be trained using backpropagation.
 
 To learn the generator's distribution \( p_g \)
 over data \( x \), we define a prior \( p_z(z) \) on input noise variables
-$z \in \Omega_z$, called \textbf{latent distribution},
+$z \in \Omega_Z$, called \textbf{latent distribution},
 and represent a mapping to the data space as
-\( G(z; \theta_g) \), where \( G: \Omega_z \rightarrow \Omega_x \)
+\( G(z; \theta_g) \), where \( G: \Omega_Z \rightarrow \Omega_X \)
 is a differentiable function parameterized by \( \theta_g \).
 Additionally, we define a second network
 \( D(x; \theta_d) \) that outputs a single scalar,
@@ -454,10 +454,82 @@ Simultaneously, the generative model \( G \) is trained to minimize
 Formally, \( D \) and \( G \) engage in the following
 two-player minimax game with the value function \( V(G, D) \):
 \begin{equation}
-\min_G \max_D V(D, G) = \mathbb{E}_{x \sim p_{\text{data}}(x)}[\log D(x)] + \mathbb{E}_{z \sim p_z(z)}[\log (1 - D(G(z)))].
+\min_G \max_D V(D, G) = \mathbb{E}_{x \sim p_X(x)}[\log D(x)] + \mathbb{E}_{z \sim p_Z(z)}[\log (1 - D(G(z)))].
 \end{equation}
 
+We can see a graphical representation of the GAN framework in Figure \ref{fig:gan}.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{figures/ch3/5.gan.png}
+    \caption{GAN framework applied to human faces generation task}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \href{https://www.linkedin.com/pulse/exploring-fascinating-realm-generative-adversarial-networks-kaurav/}{Yashwant Singh Kaurav}}}
+    \label{fig:gan}
+\end{figure}
 
+\subsection{Bidirectional GANs (BiGANs)}
+
+Generative Adversarial Networks (GANs) have the potential to be used
+for unsupervised learning of rich feature representations across various
+data distributions. However, an obvious issue arises because
+the GAN framework inherently lacks an inverse mapping from generated data
+back to the latent representation.
+This limitation means that while the generator can map latent samples
+to generated data, there is no mechanism to map data back to the latent space.
+
+To address this issue, \cite{donahue2017} introduced a novel framework
+called Bidirectional Generative Adversarial Networks (BiGAN).
+The BiGAN framework, whose architecture is illustrated
+in Figure \ref{fig:bigan}, enhances the standard GAN model
+(as introduced by \cite{goodfellow2014}) by incorporating an \textbf{encoder}.
+This encoder, denoted as \( E: \Omega_X \rightarrow \Omega_Z \),
+maps data \( x \) to latent representations
+\( z \), complementing the generator \( G \).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{figures/ch3/6.bigan.png}
+    \caption{BiGAN architecture with generator, discriminator, and encoder components.}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{donahue2017}}}
+    \label{fig:bigan}
+\end{figure}
+
+In BiGAN, the discriminator \( D \) operates not only in the data space
+(distinguishing between \( x \) and \( G(z) \)) but also jointly in the
+data and latent spaces. Specifically, the discriminator evaluates pairs
+of data and their corresponding latent representations, distinguishing
+between real \( (x, E(x)) \) and generated \( (G(z), z) \).
+Here, the latent component is either an encoder output \( E(x) \) 
+or a generator input \( z \).
+
+An essential aspect of BiGAN is that the encoder \( E \) is designed
+to learn an inverse mapping of the generator \( G \).
+Despite the encoder and generator not directly interacting, since
+\( E(G(z)) \) is not explicitly computed and the generator does not use
+\( E(x) \), the framework ensures that the encoder effectively inverts
+the generator's mapping.
+
+The training objective for BiGANs is formulated as a minimax problem involving the generator \( G \), the encoder \( E \), and the discriminator \( D \). This objective can be written as:
+\[
+\min_{G, E} \max_{D} V(D, E, G)
+\]
+where the value function \( V(D, E, G) \) is defined as:
+\begin{equation}
+V(D, E, G) := \mathbb{E}_{x \sim p_X} [ \underset{\log D(x,\, E(x)) }{\underbrace{\mathbb{E}_{z \sim p_E(\cdot | x)} \left[ \log D(x, z) \right]}}  ] +
+\mathbb{E}_{z \sim p_Z} [ \underset{\log(1 - D(G(z),\, z))}{\underbrace{\mathbb{E}_{x \sim p_G(\cdot | z)} \left[ \log(1 - D(x, z)) \right]}} ].
+\end{equation}
+In simpler terms, this objective consists of two components:
+\begin{enumerate}
+    \item The expectation over the data distribution \( p_X \) and the encoder's latent space distribution \( p_E(\cdot | x) \), which aims to maximize \( \log D(x, E(x)) \).
+    \item The expectation over the prior distribution \( p_Z \) and the generator's data distribution \( p_G(\cdot | z) \), which aims to maximize \( \log(1 - D(G(z), z)) \).
+\end{enumerate}
+
+The optimization of this minimax objective is performed using an alternating gradient-based approach, similar to the method introduced by \cite{goodfellow2014} for GANs.
+
+\subsection{Bidirectional Conditional GANs (BiCoGANs)}
+
+\subsection{Wasserstein GANs (WGANs)}
 
 \section{Causal Inference}
 
