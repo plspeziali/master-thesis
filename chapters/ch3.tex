@@ -489,7 +489,7 @@ maps data \( x \) to latent representations
 \begin{figure}[h]
     \centering
     \includegraphics[width=\textwidth]{figures/ch3/6.bigan.png}
-    \caption{BiGAN architecture with generator, discriminator, and encoder components.}
+    \caption{BiGAN architecture with generator, discriminator, and encoder.}
     \vspace{-10px}
     \caption*{\scriptsize{Source: \cite{donahue2017}}}
     \label{fig:bigan}
@@ -528,6 +528,79 @@ In simpler terms, this objective consists of two components:
 The optimization of this minimax objective is performed using an alternating gradient-based approach, similar to the method introduced by \cite{goodfellow2014} for GANs.
 
 \subsection{Bidirectional Conditional GANs (BiCoGANs)}
+
+Conditional GAN (cGAN) (\cite{mirza2014})
+is a variant of standard GANs designed to enable the
+conditional generation of data samples based on both latent variables
+(intrinsic factors) and known auxiliary information (extrinsic factors)
+such as class labels or associated data from other modalities.
+However, cGANs fails to achieve several key properties:
+
+\begin{enumerate}
+    \item The ability to disentangle intrinsic and extrinsic
+    factors during the generation process.
+    \item The ability to separate the components of extrinsic
+    factors from each other, ensuring that the inclusion of one
+    factor minimally impacts the others.
+\end{enumerate}
+
+\cite{jaiswal2018} introduced the Bidirectional Conditional GAN (BiCoGAN).
+BiCoGAN enhances the cGAN framework by simultaneously training an encoder
+along with the generator and discriminator.
+This encoder learns inverse mappings of data samples to both intrinsic
+and extrinsic factors, thereby overcoming deficiencies in prior approaches.
+In Figure \ref{fig:bicogan}, we present the architecture of BiCoGAN.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.8\textwidth]{figures/ch3/7.bicogan.jpeg}
+    \caption{BiCoGAN architecture with generator, discriminator, and encoder.}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{jaiswal2018}}}
+    \label{fig:bicogan}
+\end{figure}
+
+In the Bidirectional Conditional GAN (BiCoGAN) framework, the generator
+\( G(\tilde{z}; \theta_G) \) learns a mapping from the distribution
+\( p_{\tilde{z}} \), where \( \tilde{z} = [z, c] \), to \( p_G \),
+with the goal of making \( p_G \) approximate \( p_X \). Concurrently,
+the encoder \( E(x; \theta_E) \) learns a mapping from \( p_X \) to \( p_E \),
+aiming to make \( p_E \) approximate \( p_{\tilde{z}} \). The discriminator
+\( D \) evaluates real or fake decisions using pairs
+\( (\tilde{z}, G(\tilde{z}); \theta_D) \) and \( (E(x), x; \theta_D) \).
+
+The encoder in BiCoGAN must effectively learn the inverse mapping from data
+\( x \) to latent variables \( z \) and conditions \( c \),
+just as the generator must incorporate both to produce data samples
+that can deceive the discriminator. This requirement follows from the
+invertibility under the optimality theorem of BiGANs.
+However, achieving this optimality is challenging in practice,
+especially when the prior vector contains structured or complex information.
+While intrinsic factors \( z \) are sampled from a simple latent distribution,
+extrinsic factors \( c \), such as class labels or object attributes,
+have specialized and complex distributions that are more difficult to model.
+
+To address this challenge, we introduce the
+\textbf{extrinsic factor loss} (EFL) as a mechanism to guide BiCoGANs
+in better encoding extrinsic factors. During training, the condition
+\( c \) associated with each real data sample is known and can be used to
+improve the learning of inverse mappings from \( x \) to \( c \).
+The specific form of EFL depends on the nature of \( c \) and the dataset
+or domain in question.
+
+The BiCoGAN value function can be expressed as:
+\begin{equation}
+\begin{aligned}
+V(D, G, E) &:= \mathbb{E}_{x \sim p_X(x)} [\log D(E(x), x)]\\
+&\quad + \gamma \, \mathbb{E}_{(x, c) \sim p_X(x, c)} [\text{EFL}(c, E_c(x))] \\
+&\quad +\mathbb{E}_{z \sim p_{\tilde{z}} (\tilde{z})} [\log (1 - D(\tilde{z}, G(\tilde{z})))]
+\end{aligned}
+\end{equation}
+where \( \gamma \) is the \textbf{extrinsic factor loss weight} (EFLW), defined as:
+\[
+\gamma = \min(\alpha e^{\rho t}, \phi)
+\]
+Here, \( \alpha \) is the initial value of \( \gamma \), \( \phi \) is its maximum value, \( \rho \) controls the rate of exponential increase, and \( t \) indicates the number of epochs the model has been trained.
 
 \subsection{Wasserstein GANs (WGANs)}
 
