@@ -706,4 +706,161 @@ third term is the gradient penalty.
 
 \section{Causal Inference}
 
-\cite{Neal_2020a}
+The \textbf{causal inference} is a discipline that studies the relationships
+of cause-and-effect between variables. Specifically, it is concerned with inferring
+the causes of an observed phenomenon,
+distinguishing between \textbf{correlation} and \textbf{causality}.
+We are going to explore the basic concepts of causal inference
+as described in \cite{Neal_2020a}.
+
+\subsection{Correlation does not imply Causation}
+
+Consider the following scenario: you come across some data showing a correlation
+between wearing shoes to bed and waking up with a headache.
+It appears that most people who wear shoes to bed tend to wake up
+with a headache, while those who don’t wear shoes to bed typically
+do not wake up with a headache.
+It is common for people to interpret such data,
+where there is an \textbf{association},
+as indicating that wearing shoes
+to bed causes headaches. This is especially true if they are
+seeking a reason to avoid wearing shoes to bed.
+
+We can explain the association between wearing shoes to bed and waking
+up with a headache without implying that one causes the other.
+Both events are actually caused by a \textbf{common factor}:
+drinking the night before. This relationship is depicted
+in Figure \ref{fig:confounding}.
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=.8\linewidth]{figures/ch3/9.conf.png}
+    \end{subfigure}%
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=.9\linewidth]{figures/ch3/10.confcol.png}
+    \end{subfigure}
+    \caption{A confounding variable causes both wearing shoes to bed and waking up with a headache.}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{Neal_2020a}}}
+    \label{fig:confounding}
+\end{figure}
+
+This kind of variable is often referred to as a \textbf{confounder} and
+we refer to this type of association as a \textbf{confounding association}
+since the observed relationship is influenced by a confounder.
+
+\subsection{Potential Outcomes and the Fundamental Problem of Causal Inference}
+
+The central issue driving the need for causal inference is that
+correlation does not imply causation. If these two concepts were equivalent,
+causal inference would be easy.
+This raises the critical question: how can we determine when one
+event causes another and, therefore, infer causality?
+
+To address this, we introduce the concept of \textbf{Potential Outcomes}.
+Suppose, as shown in Figure \ref{fig:potential_outcomes},
+you have a headache, and you know that taking a pill would alleviate
+the headache, whereas not taking the pill would result in the
+headache persisting. In this scenario, you can infer a causal effect
+of the pill on the headache. However, if not taking the pill
+also resulted in the headache disappearing, you would conclude
+that there is no causal effect.
+This is the intuition behind Potential Outcomes.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.65\textwidth]{figures/ch3/11.potential.png}
+    \caption{Potential outcomes for a causal effect.}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{Neal_2020a}}}
+    \label{fig:potential_outcomes}
+\end{figure}
+
+Let's define some notation:
+\begin{itemize}
+    \item \( T \): Observed treatment
+    \item \( Y \): Observed outcome
+    \item \( i \): Denotes a specific unit or individual
+    \item \( Y_i|_{\text{do}(T=1)} \triangleq Y_i(1) \): Potential outcome under treatment
+    \item \( Y_i|_{\text{do}(T=0)} \triangleq Y_i(0) \): Potential outcome under no treatment
+    \item \( \text{\textbf{Causal Effect}} = Y_i(1) - Y_i(0) \)
+\end{itemize}
+
+
+To account for individual differences, we measure the
+\textbf{Average Treatment Effect} (ATE), given by:
+\begin{equation}
+\mathbb{E}[Y(1)] - \mathbb{E}[Y(0)].
+\end{equation}
+
+A fundamental problem in causal inference is the challenge
+of distinguishing between the observational distribution
+\( P(Y|T=t) \) and the interventional distribution \( P(Y|\text{do}(T=t)) \).
+These distributions are generally not equal; if they were, correlation
+would indeed imply causation. The intervention \( T=t \) on a population
+is denoted by the do-operator, which allows us to measure the causal
+effect from the interventional distribution \( P(Y|\text{do}(T=t)) \).
+
+However, we often cannot intervene on the entire population
+and can only access the observational distribution.
+The distinction between these distributions is illustrated
+in Figure \ref{fig:dooperator}.
+Intervening with \( \text{do}(T=0) \) (\textbf{factual}) usually
+precludes access to \( \text{do}(T=1) \) (\textbf{counterfactual}).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.9\textwidth]{figures/ch3/12.dooperator.png}
+    \caption{The difference between observational and interventional distributions.}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{Neal_2020a}}}
+    \label{fig:dooperator}
+\end{figure}
+
+One approach to address this issue is
+through a \textbf{Randomized Controlled Trial} (RCT). In an RCT, participants
+are randomly assigned to treatment or control groups, ensuring that
+\( (Y(1), Y(0)) \perp\!\!\!\perp T \), under the assumption of exchangeability.
+\textbf{Exchangeability} means that the treatment groups are comparable in the
+sense that if they were swapped, the new treatment group would exhibit
+the same outcomes as the original treatment group, and the new control
+group would exhibit the same outcomes as the original control group.
+The randomization process ensures that, as we can see in Figure \ref{fig:rct},
+the causal association between the treatment and the outcome is identifiable
+since there is no confounding due to a missing connection between the
+treatment and the cause.
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=.7\linewidth]{figures/ch3/13.rct1.png}
+    \end{subfigure}%
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=.7\linewidth]{figures/ch3/14.rct2.png}
+    \end{subfigure}
+    \caption{Randomized Controlled Trial (RCT) design vs. Observational Study.}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{Neal_2020a}}}
+    \label{fig:rct}
+\end{figure}
+
+However, it is not always feasible to randomize treatment due to several reasons:
+\begin{itemize}
+    \item \textbf{Ethical reasons}: For instance, it would be unethical
+    to randomize people to smoke in order to measure the effect on lung cancer.
+    \item \textbf{Infeasibility}: It is impractical to randomize
+    countries into different economic systems
+    (e.g. communist vs. capitalist) to measure the effect on GDP.
+    \item \textbf{Impossibility}: Certain changes, such as altering a
+    person's DNA at birth to measure the effect on breast cancer,
+    are simply not possible.
+\end{itemize}
+We must then find a way to estimate causal effects from observational data.
+
+\subsection{The Flow of Association and Causation in Graphs}
+
