@@ -864,3 +864,187 @@ We must then find a way to estimate causal effects from observational data.
 
 \subsection{The Flow of Association and Causation in Graphs}
 
+In the context of modeling associations between variables,
+we utilize Directed Acyclic Graphs (DAGs).
+The following assumptions are pertinent to this modeling approach:
+
+\begin{itemize}
+    \item \textbf{Minimality Assumption}: composed of:
+    \begin{itemize}
+        \item \textbf{Local Markov Assumption} (LMA):
+        Each node is conditionally independent of its
+        non-descendants given its parents.
+        \item \textbf{Dependency of Adjacent Nodes}: Nodes that
+        are adjacent in the DAG are dependent.
+    \end{itemize}
+    \item \textbf{Bayesian Network Factorization} (BNF): The joint probability
+    distribution can be factorized as
+    \begin{equation}
+        P(x_1, \ldots, x_n) = \prod_i P(x_i \mid \text{pa}_i)
+    \end{equation}
+    where \( \text{pa}_i \) denotes the parents of node \( x_i \).
+    If \( P \) factorizes \( G \), then \( P \) is Markovian with
+    respect to \( G \), in fact the Local Markov Assumption is valid
+    if and only if the Bayesian Network Factorization is also valid.
+    \item \textbf{Causal Edges Assumption}: In a DAG, every parent is
+    a direct cause of all its children.
+\end{itemize}
+
+But what is a \textbf{cause}? A variable \( X \) is said to be a cause
+of a variable \( Y \) if \( X \) can change in response to changes in \( Y \).
+
+In Figure \ref{fig:assumptions}, we can see how implementing each one
+of these assumptions leads to having different relationships
+between the variables in the graph.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{figures/ch3/15.assumptions.png}
+    \caption{Different relationships between variables in a graph based on the assumptions.}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{Neal_2020a}}}
+    \label{fig:assumptions}
+\end{figure}
+
+This brings us to the core of this section: understanding the flow
+of association and causation in DAGs. We can comprehend this flow
+in general DAGs by analyzing the minimal building blocks of graphs.
+
+By \textbf{flow of association}, we mean whether any two nodes in
+a graph are associated or not associated. In other words, whether two nodes are
+(statistically) dependent or (statistically) independent.
+Additionally, we will explore whether two nodes are conditionally
+independent or not.
+
+Consider a graph consisting of just two unconnected nodes,
+as depicted in Figure \ref{fig:unconnected_nodes}.
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}[->,shorten >=1pt,auto,node distance=2cm, 
+        thick,main node/.style={circle,fill=white,draw,font=\sffamily\bfseries}]
+
+      \node[main node] (1) {$X_1$};
+      \node[main node] (2) [right of=1] {$X_2$};
+
+      \path[every node/.style={font=\sffamily\small}]
+        (1) edge node {} (2);
+    \end{tikzpicture}
+    \caption{Graph with two unassociated nodes.}
+    \label{fig:unconnected_nodes}
+\end{figure}
+These nodes are not associated simply because there is no edge between them.
+This can be demonstrated by considering the factorization of \( P(x_1, x_2) \)
+given by the Bayesian Network Factorization:
+\[
+P(x_1, x_2) = P(x_1) P(x_2)
+\]
+This factorization immediately proves that the two nodes
+\( X_1 \) and \( X_2 \) are unassociated (independent)
+in this basic structure. The key assumption here is that \( P \)
+is Markov with respect to the graph in Figure \ref{fig:unconnected_nodes}.
+
+In contrast, if there is an edge between the two nodes (as in Figure \ref{fig:connected_nodes}), then the nodes are associated. The assumption used here is the causal edges assumption, which indicates that \( X_1 \) is a cause of \( X_2 \). Since \( X_1 \) is a cause of \( X_2 \), \( X_2 \) must be able to change in response to changes in \( X_1 \), establishing their association. Generally, any time two nodes are adjacent in a causal graph, they are associated.
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}[->,shorten >=1pt,auto,node distance=2cm, 
+        thick,main node/.style={circle,fill=white,draw,font=\sffamily\bfseries}]
+
+      \node[main node] (1) {$X_1$};
+      \node[main node] (2) [right of=1] {$X_2$};
+
+      \path[every node/.style={font=\sffamily\small}]
+        (1) edge node {} (2);
+    \end{tikzpicture}
+    \caption{Graph with two nodes \(X_1\) and \(X_2\) with an arrow from \(X_1\) to \(X_2\), indicating that \(X_1\) is a cause of \(X_2\).}
+    \label{fig:connected_nodes}
+\end{figure}
+
+Let's now consider more the building blocks of DAGs
+as shown in Figure
+\ref{fig:building}, where we have a
+\textbf{chain}, a \textbf{fork} and an \textbf{immorality}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{figures/ch3/16.building.png}
+    \caption{Building blocks of DAGs: chain, fork, and immorality.}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{Neal_2020a}}}
+    \label{fig:building}
+\end{figure}
+
+Chains and forks share the same set of dependencies.
+In both structures, \(X_1\) and \(X_2\) are dependent,
+and \(X_2\) and \(X_3\) are dependent for the same reason discussed
+for the graph in Figure \ref{fig:connected_nodes}.
+Adjacent nodes are always dependent when we make the causal edges assumption.
+But does association flow from \(X_1\) to \(X_3\) through
+\(X_2\) in chains and forks?
+
+In chain graphs, \(X_1\) and \(X_3\) are usually dependent simply because
+\(X_1\) causes changes in \(X_2\), which then causes changes in \(X_3\).
+In a fork graph, \(X_1\) and \(X_3\) are also usually dependent
+because the value that \(X_2\) takes on determines both the value that
+\(X_1\) takes on and the value that \(X_3\) takes on. In other words,
+\(X_1\) and \(X_3\) are associated through their shared common cause.
+However, while in chains the association between \(X_1\) and \(X_3\)
+is a causal one, in forks it is not.
+
+Chains and forks also share the same set of independencies.
+When we condition on \(X_2\) in both graphs,
+it blocks the flow of association from \(X_1\) to \(X_3\).
+This is due to the local Markov assumption; each variable can locally
+depend only on its parents. Therefore, when we condition
+on \(X_2\) (the parent of \(X_3\) in both graphs), \(X_3\)
+becomes independent of \(X_1\) (and vice versa).
+
+We refer to this independence as an instance of a \textbf{blocked path}.
+These blocked paths are illustrated in Figure \ref{fig:blocked_paths}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.85\linewidth]{figures/ch3/18.blocked.png}
+    \caption{Blocked paths in chain and fork graphs.}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{Neal_2020a}}}
+    \label{fig:blocked_paths}
+\end{figure}
+
+In contrast to chains and forks, in an immorality, \(X_1 \perp X_3\).
+We observe that conditioning on a collider can turn a blocked path
+into an unblocked path. The parents \(X_1\) and \(X_3\)
+are not associated in the general population, but when we condition
+on their shared child \(X_2\) taking on a specific value,
+they become associated. Conditioning on the collider \(X_2\)
+allows association to flow along the path
+\(X_1 \rightarrow X_2 \leftarrow X_3\), despite the fact that it
+does not when we do not condition on \(X_2\).
+In Figure \ref{fig:immorality}, we can see the immorality with
+the blocked path and the unblocked path.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.85\linewidth]{figures/ch3/19.immorality.png}
+    \caption{Immorality with a blocked path and an unblocked path.}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{Neal_2020a}}}
+    \label{fig:immorality}
+\end{figure}
+
+Conditioning on \textbf{descendants of a collider} also induces
+association between the parents of the collider.
+The intuition is that if we learn something about a collider's descendant,
+we usually also learn something about the collider itself because there
+is a direct causal path from the collider to its descendants.
+In Figure \ref{fig:descendants}, we can see a conditioning
+on a descendant of a collider.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.35\linewidth]{figures/ch3/20.descendant.png}
+    \caption{Conditioning on a descendant of a collider.}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{Neal_2020a}}}
+    \label{fig:descendants}
+\end{figure}
