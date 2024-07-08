@@ -1,4 +1,5 @@
 \section{Deep Learning}
+\label{sec:dl}
 
 In the field of machine learning, the first models you
 are often introduced to are those for regression
@@ -104,6 +105,7 @@ function, however we are not guaranteed that the training algorithm will be able
 to \emph{learn} it.
 
 \subsection{Convolutional Neural Networks}
+\label{sec:cnn}
 
 Convolutional Neural Networks (CNNs) are a specialized type of neural network
 for processing data that has a known, grid-like topology,
@@ -146,6 +148,7 @@ They have also been successfully applied to other types of data,
 such as speech recognition and natural language processing.
 
 \section{Reinformcement Learning}
+\label{sec:rl}
 
 ``\textbf{Reinforcement learning} is learning [...] how
 to map situations to actions so
@@ -352,6 +355,7 @@ time and the number of states is either finite or countable.
 
 
 \subsection{Reinforcement Learning Algorithms}
+\label{sec:rlalg}
 
 In \cite{openaiPartKinds}, the landscape of algorithms in modern reinforcement
 learning is explored.
@@ -458,6 +462,7 @@ considered \textbf{online}, otherwise,
 if the training set is fixed, it is \textbf{offline}.
 
 \section{Generative Adversarial Networks}
+\label{sec:gan}
 
 \textbf{Generative Adversarial Networks} (GANs) is a framework
 for estimating generative models via an adversarial process,
@@ -510,6 +515,7 @@ We can see a graphical representation of the GAN framework in Figure \ref{fig:ga
 \end{figure}
 
 \subsection{Bidirectional GANs}
+\label{sec:bigan}
 
 Generative Adversarial Networks (GANs) have the potential to be used
 for unsupervised learning of rich feature representations across various
@@ -576,6 +582,7 @@ using an alternating gradient-based approach, similar to the method
 introduced by \cite{goodfellow2014} for GANs.
 
 \subsection{Bidirectional Conditional GANs}
+\label{sec:bicogan}
 
 Conditional GAN (cGAN) (\cite{mirza2014})
 is a variant of standard GANs designed to enable the
@@ -654,6 +661,7 @@ is its maximum value, \( \rho \) controls the rate of exponential increase,
 and \( t \) indicates the number of epochs the model has been trained.
 
 \subsection{Wasserstein GANs}
+\label{sec:wgan}
 
 In a Generative Adversarial Network (GAN),
 the interaction between the generator \( G \) and the discriminator
@@ -714,6 +722,7 @@ We are going to explore the basic concepts of causal inference
 as described in \cite{Neal_2020a}.
 
 \subsection{Correlation does not imply Causation}
+\label{sec:correlation}
 
 Consider the following scenario: you come across some data showing a correlation
 between wearing shoes to bed and waking up with a headache.
@@ -736,11 +745,11 @@ in Figure \ref{fig:confounding}.
     \centering
     \begin{subfigure}{.5\textwidth}
       \centering
-      \includegraphics[width=.8\linewidth]{figures/ch3/9.conf.png}
+      \includegraphics[width=.65\linewidth]{figures/ch3/9.conf.png}
     \end{subfigure}%
     \begin{subfigure}{.5\textwidth}
       \centering
-      \includegraphics[width=.9\linewidth]{figures/ch3/10.confcol.png}
+      \includegraphics[width=.75\linewidth]{figures/ch3/10.confcol.png}
     \end{subfigure}
     \caption{A confounding variable causes both wearing shoes to bed and waking up with a headache.}
     \vspace{-10px}
@@ -752,117 +761,9 @@ This kind of variable is often referred to as a \textbf{confounder} and
 we refer to this type of association as a \textbf{confounding association}
 since the observed relationship is influenced by a confounder.
 
-\subsection{Potential Outcomes and the Fundamental Problem of Causal Inference}
-
-The central issue driving the need for causal inference is that
-correlation does not imply causation. If these two concepts were equivalent,
-causal inference would be easy.
-This raises the critical question: how can we determine when one
-event causes another and, therefore, infer causality?
-
-To address this, we introduce the concept of \textbf{Potential Outcomes}.
-Suppose, as shown in Figure \ref{fig:potential_outcomes},
-you have a headache, and you know that taking a pill would alleviate
-the headache, whereas not taking the pill would result in the
-headache persisting. In this scenario, you can infer a causal effect
-of the pill on the headache. However, if not taking the pill
-also resulted in the headache disappearing, you would conclude
-that there is no causal effect.
-This is the intuition behind Potential Outcomes.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=.65\textwidth]{figures/ch3/11.potential.png}
-    \caption{Potential outcomes for a causal effect.}
-    \vspace{-10px}
-    \caption*{\scriptsize{Source: \cite{Neal_2020a}}}
-    \label{fig:potential_outcomes}
-\end{figure}
-
-Let's define some notation:
-\begin{itemize}
-    \item \( T \): Observed treatment
-    \item \( Y \): Observed outcome
-    \item \( i \): Denotes a specific unit or individual
-    \item \( Y_i|_{\text{do}(T=1)} \triangleq Y_i(1) \): Potential outcome under treatment
-    \item \( Y_i|_{\text{do}(T=0)} \triangleq Y_i(0) \): Potential outcome under no treatment
-    \item \( \text{\textbf{Causal Effect}} = Y_i(1) - Y_i(0) \)
-\end{itemize}
-
-
-To account for individual differences, we measure the
-\textbf{Average Treatment Effect} (ATE), given by:
-\begin{equation}
-\mathbb{E}[Y(1)] - \mathbb{E}[Y(0)].
-\end{equation}
-
-A fundamental problem in causal inference is the challenge
-of distinguishing between the observational distribution
-\( P(Y|T=t) \) and the interventional distribution \( P(Y|\text{do}(T=t)) \).
-These distributions are generally not equal; if they were, correlation
-would indeed imply causation. The intervention \( T=t \) on a population
-is denoted by the do-operator, which allows us to measure the causal
-effect from the interventional distribution \( P(Y|\text{do}(T=t)) \).
-
-However, we often cannot intervene on the entire population
-and can only access the observational distribution.
-The distinction between these distributions is illustrated
-in Figure \ref{fig:dooperator}.
-Intervening with \( \text{do}(T=0) \) (\textbf{factual}) usually
-precludes access to \( \text{do}(T=1) \) (\textbf{counterfactual}).
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=.9\textwidth]{figures/ch3/12.dooperator.png}
-    \caption{The difference between observational and interventional distributions.}
-    \vspace{-10px}
-    \caption*{\scriptsize{Source: \cite{Neal_2020a}}}
-    \label{fig:dooperator}
-\end{figure}
-
-One approach to address this issue is
-through a \textbf{Randomized Controlled Trial} (RCT). In an RCT, participants
-are randomly assigned to treatment or control groups, ensuring that
-\( (Y(1), Y(0)) \perp\!\!\!\perp T \), under the assumption of exchangeability.
-\textbf{Exchangeability} means that the treatment groups are comparable in the
-sense that if they were swapped, the new treatment group would exhibit
-the same outcomes as the original treatment group, and the new control
-group would exhibit the same outcomes as the original control group.
-The randomization process ensures that, as we can see in Figure \ref{fig:rct},
-the causal association between the treatment and the outcome is identifiable
-since there is no confounding due to a missing connection between the
-treatment and the cause.
-
-\begin{figure}[h]
-    \centering
-    \begin{subfigure}{.5\textwidth}
-      \centering
-      \includegraphics[width=.7\linewidth]{figures/ch3/13.rct1.png}
-    \end{subfigure}%
-    \begin{subfigure}{.5\textwidth}
-      \centering
-      \includegraphics[width=.7\linewidth]{figures/ch3/14.rct2.png}
-    \end{subfigure}
-    \caption{Randomized Controlled Trial (RCT) design vs. Observational Study.}
-    \vspace{-10px}
-    \caption*{\scriptsize{Source: \cite{Neal_2020a}}}
-    \label{fig:rct}
-\end{figure}
-
-However, it is not always feasible to randomize treatment due to several reasons:
-\begin{itemize}
-    \item \textbf{Ethical reasons}: For instance, it would be unethical
-    to randomize people to smoke in order to measure the effect on lung cancer.
-    \item \textbf{Infeasibility}: It is impractical to randomize
-    countries into different economic systems
-    (e.g. communist vs. capitalist) to measure the effect on GDP.
-    \item \textbf{Impossibility}: Certain changes, such as altering a
-    person's DNA at birth to measure the effect on breast cancer,
-    are simply not possible.
-\end{itemize}
-We must then find a way to estimate causal effects from observational data.
 
 \subsection{The Flow of Association and Causation in Graphs}
+\label{sec:flow}
 
 In the context of modeling associations between variables,
 we utilize Directed Acyclic Graphs (DAGs).
@@ -918,6 +819,7 @@ independent or not.
 
 Consider a graph consisting of just two unconnected nodes,
 as depicted in Figure \ref{fig:unconnected_nodes}.
+
 \begin{figure}[h]
     \centering
     \begin{tikzpicture}[->,shorten >=1pt,auto,node distance=2cm, 
@@ -926,12 +828,11 @@ as depicted in Figure \ref{fig:unconnected_nodes}.
       \node[main node] (1) {$X_1$};
       \node[main node] (2) [right of=1] {$X_2$};
 
-      \path[every node/.style={font=\sffamily\small}]
-        (1) edge node {} (2);
     \end{tikzpicture}
     \caption{Graph with two unassociated nodes.}
     \label{fig:unconnected_nodes}
 \end{figure}
+
 These nodes are not associated simply because there is no edge between them.
 This can be demonstrated by considering the factorization of \( P(x_1, x_2) \)
 given by the Bayesian Network Factorization:
@@ -943,8 +844,9 @@ This factorization immediately proves that the two nodes
 in this basic structure. The key assumption here is that \( P \)
 is Markov with respect to the graph in Figure \ref{fig:unconnected_nodes}.
 
-In contrast, if there is an edge between the two nodes (as in Figure \ref{fig:connected_nodes}), then the nodes are associated. The assumption used here is the causal edges assumption, which indicates that \( X_1 \) is a cause of \( X_2 \). Since \( X_1 \) is a cause of \( X_2 \), \( X_2 \) must be able to change in response to changes in \( X_1 \), establishing their association. Generally, any time two nodes are adjacent in a causal graph, they are associated.
-
+In contrast, if there is an edge between the two nodes
+(as in Figure \ref{fig:connected_nodes}),
+then the nodes are associated.
 \begin{figure}[h]
     \centering
     \begin{tikzpicture}[->,shorten >=1pt,auto,node distance=2cm, 
@@ -959,6 +861,13 @@ In contrast, if there is an edge between the two nodes (as in Figure \ref{fig:co
     \caption{Graph with two nodes \(X_1\) and \(X_2\) with an arrow from \(X_1\) to \(X_2\), indicating that \(X_1\) is a cause of \(X_2\).}
     \label{fig:connected_nodes}
 \end{figure}
+The assumption used
+here is the causal edges assumption, which indicates that
+\( X_1 \) is a cause of \( X_2 \). Since \( X_1 \) is a
+cause of \( X_2 \), \( X_2 \) must be able to change
+in response to changes in \( X_1 \), establishing their
+association. Generally, any time two nodes are adjacent
+in a causal graph, they are associated.
 
 Let's now consider more the building blocks of DAGs
 as shown in Figure
@@ -999,12 +908,12 @@ depend only on its parents. Therefore, when we condition
 on \(X_2\) (the parent of \(X_3\) in both graphs), \(X_3\)
 becomes independent of \(X_1\) (and vice versa).
 
-We refer to this independence as an instance of a \textbf{blocked path}.
+We refer to this independence as an instance of a blocked path.
 These blocked paths are illustrated in Figure \ref{fig:blocked_paths}.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.85\linewidth]{figures/ch3/18.blocked.png}
+    \includegraphics[width=.65\linewidth]{figures/ch3/18.blocked.png}
     \caption{Blocked paths in chain and fork graphs.}
     \vspace{-10px}
     \caption*{\scriptsize{Source: \cite{Neal_2020a}}}
@@ -1025,7 +934,7 @@ the blocked path and the unblocked path.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.85\linewidth]{figures/ch3/19.immorality.png}
+    \includegraphics[width=.65\linewidth]{figures/ch3/19.immorality.png}
     \caption{Immorality with a blocked path and an unblocked path.}
     \vspace{-10px}
     \caption*{\scriptsize{Source: \cite{Neal_2020a}}}
@@ -1042,9 +951,350 @@ on a descendant of a collider.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.35\linewidth]{figures/ch3/20.descendant.png}
+    \includegraphics[width=.25\linewidth]{figures/ch3/20.descendant.png}
     \caption{Conditioning on a descendant of a collider.}
     \vspace{-10px}
     \caption*{\scriptsize{Source: \cite{Neal_2020a}}}
     \label{fig:descendants}
 \end{figure}
+
+Now let's formally codify the concept of a \textbf{blocked path}:
+a path between nodes \( X \) and \( Y \) is \textbf{blocked} by a
+(potentially empty) conditioning set \( Z \) if either of the following
+is true:
+\begin{enumerate}
+    \item Along the path, there is a chain
+    \(\cdots \rightarrow W \rightarrow \cdots\) or a fork
+    \(\cdots \leftarrow W \rightarrow \cdots\),
+    where \( W \) is conditioned on (\( W \in Z \)).
+    \item There is a \textbf{collider} \( W \) on the path
+    that is not conditioned on (\( W \notin Z \)) and none
+    of its descendants are conditioned on (\( de(W) \nsubseteq Z \)).
+\end{enumerate}
+
+An \textbf{unblocked path} is simply a path that is not blocked.
+The graphical intuition to have in mind is that \textbf{association} flows along
+unblocked paths and does not flow along blocked paths.
+
+Now, we are ready to introduce
+\textbf{d-separation}: two (sets of) nodes \( X \) and \( Y \) are
+\textbf{d-separated} by a set of nodes \( Z \) if all of the paths
+between (any node in) \( X \) and (any node in) \( Y \) are blocked by \( Z \)
+(\cite{pearl1988}).
+
+Otherwise, they are \textbf{d-connected}.
+
+
+\subsection{Potential Outcomes and the Fundamental Problem of Causal Inference}
+\label{sec:potential_outcomes}
+
+The central issue driving the need for causal inference is that
+correlation does not imply causation. If these two concepts were equivalent,
+causal inference would be easy.
+This raises the critical question: how can we determine when one
+event causes another and, therefore, infer causality?
+
+To address this, we introduce the concept of \textbf{potential outcomes}.
+Suppose, as shown in Figure \ref{fig:potential_outcomes},
+you have a headache, and you know that taking a pill would alleviate
+the headache, whereas not taking the pill would result in the
+headache persisting. In this scenario, you can infer a causal effect
+of the pill on the headache. However, if not taking the pill
+also resulted in the headache disappearing, you would conclude
+that there is no causal effect.
+This is the intuition behind potential outcomes.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.75\textwidth]{figures/ch3/11.potential.png}
+    \caption{Potential outcomes for a causal effect.}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{Neal_2020a}}}
+    \label{fig:potential_outcomes}
+\end{figure}
+
+Let's define some notation:
+\begin{itemize}
+    \item \( T \): Observed treatment
+    \item \( Y \): Observed outcome
+    \item \( i \): Denotes a specific unit or individual
+    \item \( Y_i|_{\text{do}(T=1)} \triangleq Y_i(1) \): Potential outcome under treatment
+    \item \( Y_i|_{\text{do}(T=0)} \triangleq Y_i(0) \): Potential outcome under no treatment
+    \item \( \text{\textbf{Causal Effect}} = Y_i(1) - Y_i(0) \)
+\end{itemize}
+
+
+To account for individual differences, we measure the
+\textbf{Average Treatment Effect} (ATE), given by:
+\begin{equation}
+\mathbb{E}[Y(1)] - \mathbb{E}[Y(0)].
+\end{equation}
+
+A fundamental problem in causal inference is the challenge
+of distinguishing between the observational distribution
+\( P(Y|T=t) \) and the interventional distribution \( P(Y|\text{do}(T=t)) \).
+These distributions are generally not equal; if they were, correlation
+would indeed imply causation. The intervention \( T=t \) on a population
+is denoted by the do-operator, which allows us to measure the causal
+effect from the interventional distribution \( P(Y|\text{do}(T=t)) \).
+
+However, we often cannot intervene on the entire population
+and can only access the observational distribution.
+The distinction between these distributions is illustrated
+in Figure \ref{fig:dooperator}.
+Intervening with \( \text{do}(T=0) \) (\textbf{factual}) usually
+precludes access to \( \text{do}(T=1) \) (\textbf{counterfactual}).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{figures/ch3/12.dooperator.png}
+    \caption{The difference between observational and interventional distributions.}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{Neal_2020a}}}
+    \label{fig:dooperator}
+\end{figure}
+
+One approach to address this issue is
+through a \textbf{Randomized Controlled Trial} (RCT). In an RCT, participants
+are randomly assigned to treatment or control groups, ensuring that
+\( (Y(1), Y(0)) \perp\!\!\!\perp T \), under the assumption of exchangeability.
+\textbf{Exchangeability} means that the treatment groups are comparable in the
+sense that if they were swapped, the new treatment group would exhibit
+the same outcomes as the original treatment group, and the new control
+group would exhibit the same outcomes as the original control group.
+The randomization process ensures that, as we can see in Figure \ref{fig:rct},
+the causal association between the treatment and the outcome is identifiable
+since there is no confounding due to a missing connection between the
+treatment and the cause.
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=.8\linewidth]{figures/ch3/13.rct1.png}
+    \end{subfigure}%
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=.8\linewidth]{figures/ch3/14.rct2.png}
+    \end{subfigure}
+    \caption{Randomized Controlled Trial (RCT) design vs. Observational Study.}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{Neal_2020a}}}
+    \label{fig:rct}
+\end{figure}
+
+However, it is not always feasible to randomize treatment due to several reasons:
+\begin{itemize}
+    \item \textbf{Ethical reasons}: For instance, it would be unethical
+    to randomize people to smoke in order to measure the effect on lung cancer.
+    \item \textbf{Infeasibility}: It is impractical to randomize
+    countries into different economic systems
+    (e.g. communist vs. capitalist) to measure the effect on GDP.
+    \item \textbf{Impossibility}: Certain changes, such as altering a
+    person's DNA at birth to measure the effect on breast cancer,
+    are simply not possible.
+\end{itemize}
+We must then find a way to estimate causal effects from observational data.
+
+\subsection{Causal Models and Identification}
+\label{sec:causal_models}
+
+\textbf{Identification} is the process of moving from a \textbf{causal estimand}
+to a \textbf{statistical estimand}. As we have seen in \ref{sec:potential_outcomes},
+conditioning on \( T = t \) means that we are restricting our focus to the subset
+of the population who received treatment \( t \). In contrast, an \textbf{intervention}
+(denoted with the \textbf{do-operator}) involves taking the entire population and
+giving everyone treatment \( t \).
+
+\textbf{Interventional distributions} such as \( P(Y \mid do(T = t)) \)
+are conceptually quite different from the \textbf{observational distribution} \( P(Y) \)
+since the latter do not include the do-operator.
+Because of this, we can observe data from them without conducting any experiments.
+This is why we call data from \( P(Y, T, X) \) \textbf{observational data}.
+If we can reduce an expression \( Q \) with do in it (an interventional expression)
+to one without do in it (an observational expression), then \( Q \) is said to be
+\textbf{identifiable}. We will refer to an estimand as a
+\textbf{causal estimand} when it contains a do-operator,
+and as a \textbf{statistical estimand} when it does not contain a do-operator.
+
+Before describing a very important assumption, we must specify what
+a \textbf{causal mechanism} is,
+we will refer to the causal mechanism that generates \( X_i \)
+as the conditional distribution of \( X_i \) given all of
+its causes: \( P(x_i \mid \text{pa}_i) \).
+
+To achieve many causal identification results, the main assumption we will
+make is that \textbf{interventions are local}:
+intervening on a variable \( X_i \) only changes the causal mechanism for \( X_i \).
+In this sense, the causal mechanisms are \textbf{modular}.
+
+\textbf{Assumption of Modularity / Independent Mechanisms / Invariance}:\\
+If we intervene on a set of nodes \( S \subseteq [n] \)\footnote{We use \( [n] \) to refer to the set \(\{1, 2, \ldots, n\}\).}, setting them to constants, then for all \( i \), we have the following:
+\begin{enumerate}
+    \item If \( i \notin S \), then \( P(x_i \mid \text{pa}_i) \) remains unchanged.
+    \item If \( i \in S \), then \( P(x_i \mid \text{pa}_i) = 1 \) if \( x_i \)
+    is the value that \( X_i \) was set to by the intervention; otherwise,
+    \( P(x_i \mid \text{pa}_i) = 0 \).
+\end{enumerate}
+
+The modularity assumption allows us to encode many different interventional
+distributions in a single graph. For example, it could be the case that
+\( P(Y) \), \( P(Y \mid do(T = t)) \), \( P(Y \mid do(T = t')) \), and
+\( P(Y \mid do(T_2 = t_2)) \) are all completely different distributions that
+share almost nothing. If this were the case, each of these distributions would
+need its own graph. However, by assuming modularity, we can encode them all
+with the same graph that we use to encode the joint \( P(Y, T, T_2, \ldots) \),
+and we can know that all of the factors (except the ones that are intervened on)
+are shared across these graphs.
+
+The \textbf{causal graph} for interventional distributions,
+as shown in an example in Figure \ref{fig:intervention},
+is simply the same graph used for the observational joint distribution,
+but with all of the edges to the intervened node(s) removed.
+This is because the probability for the intervened factor has been set to 1,
+allowing us to ignore that factor.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{figures/ch3/21.intervention.png}
+    \caption{Intervention as edge deletion in causal graphs.}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{Neal_2020a}}}
+    \label{fig:intervention}
+\end{figure}
+
+Recall from subsection \ref{sec:flow}, that \textbf{causal association}
+flows from \( T \) to \( Y \) along directed paths,
+while \textbf{non-causal association} can flow along other
+paths from \( T \) to \( Y \) unless they are blocked by either
+a non-collider that is conditioned on or a collider that is not
+conditioned on. These non-directed unblocked paths from
+\( T \) to \( Y \) are known as \textbf{backdoor paths}
+because they have an edge that goes in the ``backdoor'' of the \( T \) node.
+By conditioning on certain variables, we can block these paths and
+identify causal quantities like \( P(Y \mid \text{do}(T = t)) \).
+
+Our goal is to transform the causal estimand
+\( P(y \mid \textbf{do}(T = t)) \) into a statistical estimand
+that relies only on the observational distribution.
+We start by assuming we have a set of variables \( W \) that satisfy
+the \textbf{backdoor criterion}:\\
+A set of variables \( W \) satisfies the backdoor criterion relative to \( T \) and \( Y \) if the following are true:
+\begin{enumerate}
+    \item \( W \) blocks all backdoor paths from \( T \) to \( Y \).
+    \item \( W \) does not contain any descendants of \( T \).
+\end{enumerate}
+
+When \( W \) satisfies the backdoor criterion,
+it becomes a \textbf{sufficient adjustment set}.
+Additionally, we must ensure \textbf{positivity},
+which means that all subgroups of the data with different
+covariates have some probability of receiving any value of treatment.
+Formally, we define \textbf{positivity} for binary treatment as follows:\\
+For all values of covariates \( x \) present in the population of
+interest (i.e., \( x \) such that \( P(X = x) > 0 \)),
+\[
+0 < P(T = 1 \mid X = x) < 1
+\]
+
+\textbf{Backdoor Adjustment}: Given the modularity assumption,
+that \( W \) satisfies the backdoor criterion, and positivity, 
+we can identify the causal effect of \( T \) on \( Y \):
+\begin{equation}
+P(y \mid \textbf{do}(T = t)) = \sum_{w} P(y \mid T = t, W = w) P(w)
+\end{equation}
+
+This theorem connects to \textbf{d-separation}.
+We can use the backdoor adjustment if \( W \)
+\textbf{d-separates} \( T \) from \( Y \) in the manipulated graph.
+Recall that isolating the causal association means
+identifying it. We achieve this if \( T \) is d-separated from
+\( Y \) in the manipulated graph or if \( Y \)
+is d-separated from \( T \) in the manipulated graph,
+conditional on \( W \).
+In Figure \ref{fig:backdoor}, we can see how the backdoor paths
+that are blocked by conditioning on \( W \) allow
+us to identify the causal effect of \( T \) on \( Y \).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.75\textwidth]{figures/ch3/22.backdoor.png}
+    \caption{Backdoor paths blocked by conditioning on \( W \).}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{Neal_2020a}}}
+    \label{fig:backdoor}
+\end{figure}
+
+\subsection{Structural Causal Models}
+\label{sec:scm}
+
+We need to be able to state that $A$ is a \textbf{cause} of $B$,
+meaning that changing $A$ results in changes in $B$, but changing
+$B$ does not result in changes in $A$.
+This relationship is represented by the following
+\textbf{structural equation}:
+\begin{equation}
+B := f(A) \label{eq:streq}
+\end{equation}
+where \( f \) is some function that maps $A$ to $B$.
+
+However, the mapping between $A$ and $B$ in Equation \ref{eq:streq}
+is \textbf{deterministic}. Ideally, we'd like to allow it to be
+\textbf{probabilistic}, which allows room for some unknown
+causes of $B$ that factor into this mapping.
+We can then write the following:
+\begin{equation}
+B := f(A, U) \label{eq:strequn}
+\end{equation}
+where \( U \) is some unobserved random variable.
+The graph for this simple structural equation is shown in Figure \ref{fig:struct_eq}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.25\textwidth]{figures/ch3/23.struct_eq.png}
+    \caption{Graph of \ref{eq:strequn}.
+    The dashed node $U$ means that
+    $U$ is unobserved.}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{Neal_2020a}}}
+    \label{fig:struct_eq}
+\end{figure}
+
+While we have shown a single \textbf{structural equation}
+in Equation \ref{eq:strequn}, there can be a large collection of
+structural equations in a single model, commonly
+labeled \( M \). For example, we write structural equations
+for the causal model in Figure \ref{} below:
+\begin{equation}
+M :
+\begin{cases}
+B := f_B(A, U_B) \\
+C := f_C(A, B, U_C) \\
+D := f_D(A, C, U_D)
+\end{cases}
+\label{eq:scm}
+\end{equation}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.45\textwidth]{figures/ch3/24.scm.png}
+    \caption{Graph of \ref{eq:scm}.}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{Neal_2020a}}}
+    \label{fig:scm}
+\end{figure}
+
+The variables for which we write structural equations are known as
+\textbf{endogenous variables}. These are the variables whose causal
+mechanisms we are modeling.
+In contrast, \textbf{exogenous variables} are variables that
+do not have any parents in the causal graph.
+
+\textbf{Structural Causal Model (SCM)}: A structural causal model
+is a tuple consisting of the following sets:
+\begin{enumerate}
+    \item A set of endogenous variables \( V \)
+    \item A set of exogenous variables \( U \)
+    \item A set of functions \( f \), one to generate each
+    endogenous variable as a function of other variables
+\end{enumerate}
