@@ -1,0 +1,139 @@
+\section{Offline RL: Advancements and Challenges}
+
+\textbf{Offline Reinforcement Learning} (RL)
+has emerged as a promising approach for training control
+policies using pre-collected experiences,
+eliminating the need for potentially dangerous or
+costly online interactions. Despite significant progress
+in this field, several challenges persist in
+its practical application, particularly in control
+and robotics domains.
+
+Research efforts to enhance Offline RL performance are
+primarily advancing along two paths.
+
+\subsection{Improving Robustness and Sample Efficiency}
+
+The first research direction focuses on refining
+existing methods to enhance their robustness and
+sample efficiency. \cite{kumar2021} propose a comprehensive
+workflow for offline model-free robotic reinforcement
+learning. Their approach addresses challenges specific
+to real-world robotics applications, proposing
+metrics and protocols to assist practitioners in
+selecting policy checkpoints, regularization parameters,
+and model architecture.
+
+\cite{ijcai2023} introduce a hierarchical approach called
+``Guide to Control'' that solves efficiently long-horizon
+and sparse-reward tasks from offline data.
+This method enhances the effectiveness
+of offline RL in complex environments by breaking down the overall
+task into more manageable sub-tasks, thereby improving learning
+efficiency and performance.
+
+\subsection{Developing Datasets and Benchmarks}
+
+The second path concentrates on creating extensive datasets
+and benchmarks tailored for control and robotics domains.
+\cite{gurtler2023} present a benchmark for offline RL
+on real-robot hardware, providing a crucial resource for
+evaluating algorithms in practical settings.
+In their work they propose a set of
+benchmark datasets for robotic manipulation
+that are intended to help improving the
+state-of-the-art in offline reinforcement learning.
+
+\cite{liu2023} contribute datasets and benchmarks
+specifically designed for offline safe reinforcement learning
+to accelerate research in this area.
+Their work addresses the critical aspect of safety in robotic
+applications, providing resources for researchers to develop and
+test algorithms that not only optimize performance but also ensure
+safe operation in various scenarios. The suite comprises three
+main components: expertly crafted safe policies, D4RL-styled
+datasets with environment wrappers, and high-quality offline
+safe RL baseline implementations. The authors present a methodical
+data collection pipeline using advanced safe RL algorithms to generate
+diverse datasets across 38 popular safe RL tasks,
+ranging from robot control to autonomous driving.
+They also introduce data post-processing filters to
+modify dataset diversity, simulating various data collection conditions.
+
+\section{Data Augmentation Strategies in RL}
+
+Despite ongoing improvements in learning algorithms,
+the quantity of training data continues to be a critical
+determinant of success in machine learning processes.
+This is especially challenging when dealing with complex,
+high-dimensional inputs such as images, where the data requirements
+for effective training are substantial.
+
+To address the problem of limited data availability,
+researchers and practitioners often turn to
+\textbf{data augmentation techniques}.
+These methods aim to expand existing datasets by generating
+synthetic samples that are both artificial and plausible,
+thereby enriching the training set without the need
+for additional real-world data collection.
+
+\cite{mumini2022} provide a comprehensive survey of modern data
+augmentation approaches, highlighting their potential in
+enhancing computer vision across various domains.
+
+\subsection{Augmentation in Online and Offline RL}
+
+Both online and offline RL approaches have incorporated data
+augmentation techniques to improve learning efficiency and generalization.
+
+In the \textbf{online} RL setting, \cite{laskin2020}
+introduce Reinforcement Learning with Augmented Data (RAD), 
+a simple module designed to enhance most RL algorithms.
+The authors conduct an extensive study of various data augmentation
+techniques for both pixel-based and state-based inputs in RL, including
+two new augmentations they introduce: random translate and random
+amplitude scale.
+
+\cite{hansen2021} further further explore the concept of data augmentation
+in online RL, proposing SOft Data Augmentation (SODA),
+a novel approach to improve generalization in RL;
+unlike traditional methods that directly learn policies
+from augmented data, SODA decouples augmentation from policy learning.
+It does this by applying a soft constraint on the encoder to
+maximize mutual information between latent representations of
+augmented and non-augmented data, while using only non-augmented
+data for RL optimization.
+
+In the \textbf{offline} RL setting, \cite{han2022}
+introduce a selective data augmentation technique
+using a Variational Autoencoder (VAE).
+The method targets sparse subspaces in the dataset,
+representing them in the VAE's latent space,
+then sampling and decoding new data points to augment
+underrepresented regions. This approach aims to generate
+virtual data that closely aligns with the original data distribution.
+
+\cite{joo2022} propose a data augmentation method for offline RL
+called Swapping Target Q-Value (SQV).
+SQV works by swapping Q-values between original and transformed images,
+encouraging the algorithm to treat similar states as equivalent while
+emphasizing differences between distinct states.
+This method aims to enhance pixel-based learning without auxiliary
+loss functions, potentially improving performance and generalization
+in offline RL scenarios with limited datasets.
+
+\subsection{Dynamics-Aware Augmentation}
+
+Traditional augmentation methods often operate without
+knowledge of the underlying environment dynamics, requiring
+careful tuning to avoid generating inconsistent samples.
+To mitigate this issue, dynamics-aware augmentation schemes
+have emerged in the robotics field.
+
+
+
+Nonetheless, effectively implementing these techniques
+requires an in-depth understanding
+of the underlying process, which is often not available, and
+the development of an augmentation strategy specifically
+crafted for the task at hand.
