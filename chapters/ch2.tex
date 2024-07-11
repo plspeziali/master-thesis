@@ -130,10 +130,50 @@ careful tuning to avoid generating inconsistent samples.
 To mitigate this issue, dynamics-aware augmentation schemes
 have emerged in the robotics field.
 
-
+In a paper by \cite{lin2020} the authors introduce a
+framework called
+\textbf{Invariant Transform Experience Replay}
+to improve Deep Reinforcement Learning (DRL)
+for robot control.
+The main idea is to use symmetries in robotic
+tasks to create more training data by exploiting
+reflectional symmetries and taking advantage of
+flexible goal definitions.
 
 Nonetheless, effectively implementing these techniques
 requires an in-depth understanding
 of the underlying process, which is often not available, and
 the development of an augmentation strategy specifically
 crafted for the task at hand.
+
+\section{Learning-Based Approaches to Data Generation}
+
+Researchers are increasingly turning to data-driven methods
+to overcome these obstacles. These approaches aim to learn
+the underlying data generation model from the offline
+dataset itself. After the model is trained,
+it can be used to produce new samples that align
+with the environment's dynamics. This strategy allows
+for the creation of synthetic data that is more likely
+to be consistent with the real-world processes
+being modeled, without requiring explicit knowledge
+of those processes.
+
+\subsection{Transformer-Based Models}
+
+\cite{wang2022} introduce the Bootstrapped Transformer,
+a novel algorithm for offline RL.
+They approach offline RL as a sequence generation
+problem, using \textbf{Transformer} models to represent
+trajectories. Recognizing the common issue of
+limited and insufficiently diverse training
+data in offline RL datasets, they implement a
+\textbf{bootstrapping technique}: 
+this allows the model to generate additional
+offline data using its own learned representations,
+which is then used to enhance the training of
+the sequence model.
+
+\subsection{World Models}
+
+\cite{lian2023a} 
