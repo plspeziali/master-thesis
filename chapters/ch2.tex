@@ -174,6 +174,159 @@ offline data using its own learned representations,
 which is then used to enhance the training of
 the sequence model.
 
-\subsection{World Models}
+\subsection{World Models and Variational Autoencoders}
 
-\cite{lian2023a} 
+\textbf{World Models}, introduced in \cite{ha2018},
+are a class of models that combine a Variational
+Autoencoder as a Vision module,
+a Recurrent Neural Network (RNN)
+with a Mixture Density Network (MDN) as a Memory
+module and a simple Neural Network (NN)
+layer as a Controller.
+These models can be trained
+quickly in an unsupervised manner to learn a
+compressed spatial and temporal representation
+of the environment.
+
+A Variational Autoencoder (VAE),
+defined in \cite{kingma2013},
+is an unsupervised learning architecture
+that learns a low-dimensional latent space
+representation of the input data
+by encoding and decoding it through
+two separate neural networks.
+
+Despite not being explicitly designed for data augmentation,
+World Models and VAEs
+can be naturally used to achieve the same objective.
+
+\cite{hafner2020} 
+introduces \textbf{Dreamer}, a reinforcement learning
+agent that uses a learned world model to solve complex
+tasks from visual inputs. Dreamer learns a compact
+latent space representation of the environment and
+uses this model to imagine trajectories and learn
+behaviors through ``latent imagination''.
+The agent learns both actions and state values in the
+latent space, efficiently optimizing behavior
+by propagating analytic gradients of learned
+state values through imagined trajectories.
+
+A similar approach was proposed in \cite{andersen2018}
+where the \textbf{Dreaming Variational Autoencoder} (DVAE)
+architecture is presented.
+The DVAE combines variational autoencoders
+with deep reinforcement learning agents,
+allowing agents to learn optimal policies using
+generated training data samples. To test this approach,
+the authors also present \textbf{Deep Maze}, a novel and flexible
+maze engine that provides various challenges
+for reinforcement learning algorithms,
+including partial and fully-observable state-spaces,
+long-horizon tasks, and both deterministic and
+stochastic problems.
+
+\section{Counterfactual Reasoning in Data Generation}
+
+The \textbf{counterfactual-based approach} offers a
+versatile and robust alternative rooted in
+the theory of \textbf{Structural Causal Models} (SCMs) 
+(which are discussed in more detail in Section
+\ref{sec:scm}).
+This method begins by modeling the system's
+dynamics using an SCM, which is then employed
+for counterfactual reasoning. This process generates
+new samples as counterfactual outcomes that align with
+the model. Unlike previous methods, SCMs provide
+tools to model and estimate unmeasured variables,
+enabling a more precise depiction of the factors
+affecting the system's behavior.
+
+\subsection{Counterfactual Generative Models}
+
+\cite{sauer2021} introduce the
+\textbf{Counterfactual Generative Network} (CGN),
+a novel approach to improve the robustness and
+interpretability of image classifiers.
+The authors propose decomposing the image
+generation process into independent causal
+mechanisms that disentangle object shape, texture
+and background. This allows for the generation of
+counterfactual images, synthetic images with novel
+combinations of these features.
+The CGN is trained without direct supervision,
+using only class labels and inductive biases and
+the authors demonstrate the CGN's ability to
+generate counterfactual images
+on MNIST and ImageNet datasets, as shown
+in Figure \ref{fig:ctf}.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{figures/ch2/1.ctf.png}
+    \caption{ImageNet Counterfactuals produced by the CGN}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{sauer2021}}}
+    \label{fig:ctf}
+\end{figure}
+
+Another usage of counterfactual reasoning,
+this time in the context of medical imaging,
+is presented in \cite{mertes2022}.
+This paper introduces GANterfactual,
+a novel approach for generating counterfactual
+explanations for image classifiers using adversarial
+image-to-image translation techniques.
+Unlike traditional methods that highlight
+important areas in images, GANterfactual
+modifies input images to change the
+classifier's prediction,
+providing users with a different kind
+of explanatory information.
+The authors focus on medical contexts,
+specifically pneumonia detection in chest X-rays,
+where textural and structural information is crucial.
+
+\subsection{Counterfactual Data Augmentation in Offline RL}
+
+\cite{lu2020} investigate counterfactual-based
+data augmentation
+specifically in the context of Offline RL.
+They propose a Deep Generative Model based on the
+Bidirectional Conditional Generative Adversarial Network
+(BiCoGAN) architecture (which is discussed in more detail
+in Section \ref{sec:bicogan}), the model
+can be seen in Figure \ref{fig:rlcf}.
+The authors use structural causal models (SCMs)
+to model state dynamics, leveraging both
+commonalities and differences across subjects,
+and allowing to estimate unmeasured variables,
+which are then used to effectively
+reproduce the environment’s initial conditions
+and enable the
+generation of counterfactual outcome.
+They prove that counterfactual outcomes are identifiable
+under mild conditions and that a Double Dueling
+Deep Q-Network (discussed in Section \ref{sec:rl})
+trained on both the augmented dataset and the original
+counterpart achieves better performance on the first one.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.5\textwidth]{figures/ch2/2.rlcf.png}
+    \caption{The proposed Deep Generative Model for Counterfactual Data Augmentation in Offline RL}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{lu2020}}}
+    \label{fig:rlcf}
+\end{figure}
+
+However, this approach is designed for non-visual,
+low-dimensional inputs, and discrete control
+actions. Additionally, a significant drawback of this algo-
+rithm is its lack of a mechanism for estimating the reward
+associated with the generated states. This limitation implies
+that retrieving the reward is possible only when the reward
+function can be directly calculated from the generated states,
+a condition that does not always apply.
+
+
