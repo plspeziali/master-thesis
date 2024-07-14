@@ -442,11 +442,13 @@ for representing and training agents:
     \begin{equation}
     a(s) = \arg \max_a Q_{\theta}(s,a)
     \end{equation}
-    An example of a Q-learning algorithm is Deep Q-Network (\textbf{DQN}),
+    An example of a Q-learning algorithm is Deep Q-Network (\textbf{DQN})
+    \cite{dqn},
     which uses a deep neural network to approximate the optimal action-value
     function in environments with large state spaces,
-    and its variants such as Double DQN (\textbf{DDQN}) and
-    Dueling Double DQN (\textbf{D3QN}).
+    and its variants such as Double DQN (\textbf{DDQN})
+    \cite{ddqn} and
+    Dueling Double DQN (\textbf{D3QN}) \cite{d3qn}.
 
 \end{itemize}
 
@@ -455,7 +457,8 @@ of both policy optimization and Q-learning.
 In this spectrum of algorithms we can find 
 \textbf{actor-critic methods}, which consist of two components:
 an \textbf{actor} that makes actions and a \textbf{critic} that evaluates them.
-An example of an actor-critic algorithm is Twin-Delayed DDPG (\textbf{TD3}).
+An example of an actor-critic algorithm is Twin-Delayed DDPG (\textbf{TD3})
+\cite{td3}.
 
 If samples are collected during training the reinforcement learning is
 considered \textbf{online}, otherwise,

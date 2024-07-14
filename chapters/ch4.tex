@@ -1,0 +1,288 @@
+\section{Problem Statement}
+
+In this work, we address the challenge of training an agent using
+an offline Deep Reinforcement Learning (DRL) algorithm with access 
+to a pre-collected dataset \( \mathcal{D} \) of experiences. 
+Each experience in \( \mathcal{D} \) captures an interaction with
+the environment and is represented as a tuple
+\[ T = (s_t, s_{t+1}, a_t, r_{t+1}) .\] Here, \( s_t \)
+and \( s_{t+1} \) are the \textbf{observed states} at time-steps
+\( t \) and \( t+1 \), respectively, \( a_t \) is the \textbf{action}
+taken at time \( t \), and \( r_{t+1} \) is the \textbf{reward} received
+after taking action \( a_t \) and transitioning to state \( s_{t+1} \).
+States can be represented in various forms:
+\begin{itemize}
+    \item \textbf{Numerical data}: consisting of a stack of vectors of
+    real numbers representing the physical state of the environment
+    (e.g., position, velocity, orientation in robotics,
+    suffering from anemia or not in healthcare).
+    \item \textbf{Images}: consisting of a sequence of images
+    observed by the agent (e.g., frames from a camera mounted on a
+    robot or a patient's medical images).
+    \item \textbf{Images and numerical data}: a combination of the
+    above two representations (e.g., images from a robot's camera
+    and its joint angles).
+\end{itemize}
+The number of images (or vectors) in the state representation
+is denoted by \( N_{\mathcal{S}} \) such that
+\[ s_t = \{ \mathcal{S}_{t-(N_{\mathcal{S}}-1)}, \ldots,
+\mathcal{S}_{t-1}, \mathcal{S}_t \} \text{  and  }
+s_{t+1} = \{ \mathcal{S}_{t-(N_{\mathcal{S}}-2)}, \ldots,
+\mathcal{S}_t, \mathcal{S}_{t+1} \} \]
+\[
+    \text{where } \mathcal{S}_t =
+    \{\text{`num': } \mathcal{X}_t, \text{ `img': } \mathcal{I}_t\} \text{ or }
+    \mathcal{S}_t = \{\text{`num': } \mathcal{X}_t\}
+    \text{ or } \mathcal{S}_t = \{\text{`img': } \mathcal{I}_t\}.
+\]
+
+In real-world scenarios, where comprehensive simulators are unavailable,
+the dataset \( \mathcal{D} \) may lack crucial experiences due
+to potential risks (e.g., collisions, patient harm) or high costs.
+This deficiency can prevent the agent's training and result in policies
+that are neither effective nor robust. Therefore, our goal is to \textbf{augment}
+\( \mathcal{D} \) by generating additional experiences that
+\textbf{align with the environment's underlying transition dynamics}.
+
+To model these state-transition dynamics, we use a
+\textbf{Structural Causal Model} (SCM)
+defined as:
+\[
+S_{t+1} = f_s(S_t, A_t, U_{t+1})
+\]
+where \( S_{t+1} \), \( S_t \), and \( A_t \) are random variables representing
+the states and action, while \( U_{t+1} \) represents unobserved
+variables affecting the transition.
+The function \( f_s \) captures the causal mechanism
+determining the next state \( S_{t+1} \) from its causes
+\( S_t \), \( A_t \), and \( U_{t+1} \).
+Additionally, we model the reward as:
+\[
+R_{t+1} = f_r(S_t, S_{t+1}, A_t)
+\]
+If \( f_s \) and \( f_r \) are known, we can generate
+\textbf{counterfactual} experiences.
+
+Given an observed tuple \( T = (s_t, s_{t+1}, a_t, r_{t+1}) \),
+we aim to create a new tuple \( T' = (s_t, s'_{t+1}, a'_t, r'_{t+1}) \)
+representing what might have occurred if a different action \( a'_t \)
+were taken in state \( s_t \). This involves the following steps:
+\begin{enumerate}
+    \item \textbf{Abduction}: Estimate \( U_{t+1} = \hat{u}_{t+1} \)
+    from the observed data \( T = (s_t, s_{t+1}, a_t, r_{t+1}) \);
+    \item \textbf{Action}: Perform the counterfactual action
+    \( a'_t \neq a_t \);
+    \item \textbf{Prediction}: Use the estimated \( \hat{u}_{t+1} \)
+    and the updated SCM model to predict \( s'_{t+1} \) and \( r'_{t+1} \).
+\end{enumerate}
+
+By creating these counterfactual samples, we can form an augmented dataset
+\( \mathcal{D}' \), which can then be used to train an offline DRL agent.
+
+In practice, however, neither the Structural Causal Model (SCM),
+i.e., \( f_s \) and \( f_r \), nor the function to perform
+the abduction step and estimate the unobserved variable
+\( U_{t+1} \) are known. In the following, we present the framework
+we devised to infer the SCM model from the available data \( \mathcal{D} \)
+and simultaneously learn a function to estimate
+\( U_{t+1} \) (see Subsection \ref{sec:wre}). Additionally, we investigated
+a method where the noise is known and counterfactual states are collected
+(see Subsection \ref{sec:e2e}).
+This approach shifts the problem towards developing the most accurate and
+representative simulator.
+
+\section{Frameworks for Counterfactual Data Generation}
+
+In this section, we introduce two different approaches designed to
+address the challenges of training agents using Offline
+Deep Reinforcement Learning (DRL) with a pre-collected dataset \( \mathcal{D} \).
+Both approaches aim to generate additional high-fidelity experiences
+that align with the environment's underlying transition dynamics
+but differ in their methodologies and assumptions.
+
+In the following subsections, we delve into the specifics
+of each approach, outlining their methodologies, advantages, and
+implementation details. This exploration aims to
+provide a comprehensive understanding of how these
+frameworks can be employed to augment the dataset \( \mathcal{D} \) and improve
+the training of offline DRL agents.
+
+\subsection{Wasserstein Reward-enhanced CounTerfactual\\ Data Generation}
+\label{sec:wre}
+
+The first approach, called  focuses on inferring the Structural Causal Model
+(SCM) from the available data \( \mathcal{D} \) and simultaneously learning
+a function to estimate the unobserved variables $U_{t+1}$.
+
+This approach is valuable when the underlying dynamics of the
+environment are complex and not fully known, allowing us to
+infer and utilize causal relationships for better training.
+
+The proposed strategy for estimating the Structural Causal Model (SCM)
+integrates two key components: an optional Convolutional AutoEncoder (CAE)
+for dimensionality reduction and a Deep Generative Model for
+implementing the causal mechanisms.
+
+The CAE is designed to compress high-dimensional visual inputs,
+making the data more manageable while retaining essential information.
+The Deep Generative Model is used to learn the causal mechanism \( f_s \),
+the abduction function needed to estimate \( U_{t+1} \),
+and the reward model \( f_r \).
+Figure \ref{fig:wre} provides a visual illustration of the entire solution.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=.95\textwidth]{figures/ch4/1.wre.pdf}
+    \caption{WRe-CTDG framework in a situation where the states are
+    images only and the CAE is employed.}
+    \label{fig:wre}
+\end{figure}
+
+\subsubsection{Dimensionality Reduction via Convolutional AutoEncoders}
+
+Unlike state-of-the-art approaches, our work generates experience samples
+where states can also be represented by images. To handle the challenges posed
+by high-dimensional visual data, we present the possibility of using a CAE,
+which is a Variational AutoEncoder (VAE, see Section \ref{sec:vae})
+made by two Convolutional Neural Networks (CNN, see Section \ref{sec:cnn}).
+to compute low-dimensional encodings that preserve the meaningful
+information from the input images.
+It consists of an encoder \( \phi = E_s(\mathcal{I}) \)
+that extracts a low-dimensional encoding \( \phi \)
+from the image \( \mathcal{I} \), and a decoder
+\( D_s(\phi) = \mathcal{I}_{\text{rec}} \)
+that reconstructs the original image \( \mathcal{I} \).
+
+The CAE is trained by minimizing the reconstruction error over
+the images \( \mathcal{I} \) in the collected dataset \( \mathcal{D} \):
+
+\begin{equation}
+\mathcal{L}_{E_s, D_s} = \mathbb{E}_{\mathcal{I} \sim P_{\text{data}}}
+\left[ \| \mathcal{I} - \mathcal{I}_{\text{rec}} \|^2 \right]
+\end{equation}
+
+Minimizing this reconstruction error ensures that the encoder \( E_s \)
+computes robust and informative image encodings, and the decoder \( D_s \)
+can accurately reconstruct images from these encodings.
+
+The encoder is used to encode the images representing the environment
+states into their corresponding low-dimensional encodings.
+We refer to the encoded states at time \( t \) and \( t+1 \) as
+\( s_{t,\phi} = E_s(s_t) \) and \( s_{t+1,\phi} = E_s(s_{t+1}) \).
+The decoder is used to reconstruct images from the low-dimensional
+encodings generated by the generator network. The weights of both
+\( E_s \) and \( D_s \) are frozen and not updated during the next
+phase of learning the SCM model.
+
+In the next section we are not going to explicitly use
+\( s_{t,\phi} \) and \( s_{t+1,\phi} \) since utilizing the
+CAE is optional and depends on the nature of the state representation.
+So, by default, we will refer to the states as \( s_t \) and \( s_{t+1} \).
+
+\subsubsection{Counterfactual Data Generation}
+
+To learn the SCM from the collected dataset \( \mathcal{D} \),
+we propose a novel strategy called
+Wasserstein Reward-enhanced Counterfactual Data Generation (WRe-CTDG).
+This solution builds upon the BiCoGAN framework presented in \cite{lu2020}
+with significant enhancements
+aimed at improving the effectiveness of the estimated SCM in generating
+counterfactual samples in vision-based DRL problems. Key enhancements
+include adapting the Wasserstein Generative Adversarial Network (WGAN)
+framework (see Section \ref{sec:wgan})
+for improved training stability and introducing an additional
+loss term to learn the reward model and predict reward values for counterfactual
+actions.
+
+The WRe-CTDG framework consists of three main components:
+
+\begin{itemize}
+    \item \textbf{Generator \( G_s \)}:
+    Implements the causal mechanism \( f_s \).
+    It maps the inputs \( (U_{t+1}, X_t) \)
+    to the next-state encoding \( \hat{\Phi}_{t+1} \),
+    where \( X_t = (S_t, A_t) \).
+    The distribution learned by \( G_s \) is
+    \( P(\hat{\Phi}_{t+1} | U_{t+1}, X_t) \).
+    \item \textbf{Encoder \( E_u \)}: Implements the abduction function.
+    It maps the inputs \( (\Phi_{t+1}, X_t) \) to the
+    estimated unobserved factor \( \hat{U}_{t+1} \).
+    The distribution learned by \( E_u \) is
+    \( P(\hat{U}_{t+1} | \Phi_{t+1}, X_t) \).
+    Additionally, \( E_u \) estimates the reward model \( f_r \)
+    to predict the reward associated with a \( (\Phi_{t+1}, X_t) \)
+    tuple, denoted as \( \hat{r}_{t+1} \).
+    \item \textbf{Critic \( C \)}: Integrates the WGAN paradigm
+    into the framework. It replaces the discriminator in
+    traditional GANs and computes a score quantifying
+    the likelihood of the input tuples being drawn
+    from either the joint distribution
+    \( P(\hat{\Phi}_{t+1}, U_{t+1}, X_t) \) (generated samples) or
+    \( P(\Phi_{t+1}, \hat{U}_{t+1}, X_t) \) (real samples).
+    
+    The metric is approximated by the Wasserstein distance \( W \)
+    as follows:
+    \begin{equation}
+        \begin{aligned}
+            W &=& \mathbb{E}_{T \sim P_{\mathcal{D}}} \left[ C(\hat{\Phi}_{t+1}, U_{t+1}, X_t) \right] \\ 
+            & &- \mathbb{E}_{T \sim P_{\mathcal{D}}} \left[ C(\Phi_{t+1}, \hat{U}_{t+1}, X_t) \right]
+        \end{aligned}
+    \end{equation}
+    where $C(\cdot)$ is a score computed by the critic.
+\end{itemize}
+
+The goal of training the encoder-generator pair is to minimize \( W \),
+thereby improving the ability of both the encoder and generator
+to produce samples that are indistinguishable from those generated
+by their counterparts. Additionally, the function \( E_u \) must
+accurately predict the rewards for each transition.
+Thus, the objective function for the pair \( (G_s, E_u) \) is defined as:
+
+\begin{equation}
+L_{G_s, E_u} = -W + \lambda_R \; \mathbb{E}_{R_{t+1} \sim P_{\mathcal{D}}}
+\left[ \| \hat{R}_{t+1} - R_{t+1} \|^2 \right]
+\end{equation}
+
+where \( \lambda_R \) regulates the influence of the reward
+prediction term. On the other hand, the critic is trained
+using the Wasserstein Loss with Gradient Penalty,
+which addresses the problem of vanishing gradients and
+the limited expressive power of traditional WGANs \cite{gulrajani2017}.
+The objective function for \( C \) is defined as:
+
+\begin{equation}
+L_C = W + \lambda_G \mathbb{E}_{T \sim P_{\mathcal{D}}}
+\left[ (\| \nabla_{\tilde{\Phi}_T, \tilde{U}_T} C(\tilde{\Phi}_T,
+\tilde{U}_T, X_t) \| - 1)^2 \right]
+\end{equation}
+
+where \( \lambda_G \) determines the strength of the Gradient Penalty
+and the interpolation variables \( \tilde{\Phi}_T \) and \( \tilde{U}_T \)
+are given by:
+
+\[
+    \begin{aligned}
+        \tilde{\Phi}_T \;\; &=& \alpha \, \Phi_{t+1} + (1 - \alpha) \, \hat{\Phi}_{t+1} \\ 
+        \tilde{U}_T \;\; &=& \alpha \, U_{t+1} + (1 - \alpha) \, \hat{U}_T
+    \end{aligned}
+\]
+
+for \( \alpha \in [0, 1] \), sampled uniformly at random,
+indicating a blend between real and generated samples.
+By maximizing \( W \), the critic aims to increase the difference
+in evaluations between samples generated from the generator distribution
+\( P(\hat{\Phi}_{t+1} | U_{t+1}, X_t) \) and those from the encoder
+distribution \( P(\hat{U}_{t+1} | \Phi_{t+1}, X_t) \).
+
+\subsection{End-to-End CounTerfactual Data Generation}
+\label{sec:e2e}
+
+The second approach assumes that the noise in the system is known
+and focuses on directly collecting counterfactual states.
+
+This approach shifts the problem towards creating the most
+accurate and representative simulator, enhancing the
+realism and diversity of the generated experiences.
+It is particularly useful when there is access to detailed
+knowledge about the noise in the system, enabling more
+precise simulation of the environment.
