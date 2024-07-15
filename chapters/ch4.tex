@@ -200,13 +200,13 @@ The WRe-CTDG framework consists of three main components:
     \item \textbf{Generator \( G_s \)}:
     Implements the causal mechanism \( f_s \).
     It maps the inputs \( (U_{t+1}, X_t) \)
-    to the next-state encoding \( \hat{\Phi}_{t+1} \),
+    to the next-state encoding \( \hat{\phi}_{t+1} \),
     where \( X_t = (S_t, A_t) \).
     The distribution learned by \( G_s \) is
     \( P(\hat{\Phi}_{t+1} | U_{t+1}, X_t) \).
     \item \textbf{Encoder \( E_u \)}: Implements the abduction function.
     It maps the inputs \( (\Phi_{t+1}, X_t) \) to the
-    estimated unobserved factor \( \hat{U}_{t+1} \).
+    estimated unobserved factor \( \hat{u}_{t+1} \).
     The distribution learned by \( E_u \) is
     \( P(\hat{U}_{t+1} | \Phi_{t+1}, X_t) \).
     Additionally, \( E_u \) estimates the reward model \( f_r \)
@@ -274,11 +274,114 @@ in evaluations between samples generated from the generator distribution
 \( P(\hat{\Phi}_{t+1} | U_{t+1}, X_t) \) and those from the encoder
 distribution \( P(\hat{U}_{t+1} | \Phi_{t+1}, X_t) \).
 
+When the data is purely numerical or when the
+CAE is employed, both the Generator $G_s$ and the
+Encoder $E_u$ consist exclusively of fully connected
+layers. This architecture is sufficient to handle
+the numerical input and effectively capture the dependencies
+in the data. However, when the state representation
+includes images, convolutional layers are incorporated
+into both the Generator and the Encoder:
+\begin{itemize}
+    \item In the Encoder, the convolutional blocks perform a
+    downsampling on the images, effectively reducing their
+    spatial dimensions while capturing essential features.
+    These downsampled feature maps are then flattened
+    and combined with the other numerical data,
+    ensuring a comprehensive representation of the input.
+
+    \item In the Generator, after extracting the numerical data,
+    convolutional blocks are used to upsample the output of
+    the fully connected network. This upsampling process
+    reconstructs the spatial dimensions,
+    enabling the model to generate the image $\mathcal{I}_{t+1}$.
+\end{itemize}
+
+\subsubsection{Experience Generation through Counterfactual Augmentation}
+
+After understanding the causal mechanism \( f_s \),
+the abduction function, and the reward model \( f_r \),
+we can utilize WRe-CTDG and (optionally) the CAE
+for counterfactual
+data augmentation. The original dataset \( \mathcal{D} \)
+is expanded by a factor of \( \beta \)
+according to the method described in Algorithm \ref{alg1}.
+Specifically, if the CAE is used, for each sampled tuple
+\( T = (s_t, s_{t+1}, a_t, r_{t+1}) \in D \),
+the image encodings in $s_t$, so
+\( s_t[\text{`img'}] = \{I_{t-(N_{\mathcal{S}}-1)}, \ldots, I_{t-1}, I_t\} \),
+and \( I_{t+1} \in s_{t+1} \) are first computed using
+the encoder \( E_s \). Next, \( E_u \) and \( G_s \)
+are used to create a counterfactual
+sample through three steps:
+\begin{enumerate}
+    \item Perform abduction with \( E_u \) to estimate
+    the unknown factor \( \hat{u}_{t+1} \);
+    \item Use \( G_s \) to generate the counterfactual
+    states \( \hat{s}'_{t+1} \) given
+    \( \hat{u}_{t+1}, s_t \), and the counterfactual
+    action \( a'_t \);
+    \item Use \( E_u \) again to produce the reward
+    \( \hat{r}'_{t+1} \).
+\end{enumerate}
+
+Finally, if the CAE is used,
+the image \( \hat{I}'_{t+1} \) is generated using
+the decoder \( D_s \). Once the augmented dataset
+\( \mathcal{D}' \)
+is ready, it can be used to train any off-policy DRL
+algorithm, such as D3QN or TD3.
+
+\vspace{2cm}
+
+\begin{algorithm}[hb]
+    \small
+    \caption{WRe-CTDG+CAE Counterfactual Augmentation} \label{alg1}
+    
+    \KwIn{dataset $\mathcal{D}$, augmentation factor $\beta > 1$, \\
+    ($E_s$, $D_s$) CAE, ($G_s$, $E_u$) WRe-CTDG}
+    \KwOut{augmented dataset $\mathcal{D}'$}
+    
+    
+    \BlankLine
+    $\mathcal{D'} \gets copy(\mathcal{D})$ \\
+    $M \gets$ size of $\mathcal{D}$ \\
+    $M' = M \gets$ size of $\mathcal{D'}$ \\
+    \While{$M' < \beta M$}{
+        Sample batch $B$ $\in \mathcal{D}$ \\
+            $B' \gets \emptyset$ 
+            
+            \ForEach{$ T = (s_t, s_{t+1}, a_t, r_{t+1}) \in B$}{
+                \If{CAE is used}{
+                    $s_{t} \gets \text{encode images in $s_{t}$:} \, E_s(s_t)$ \\
+                    $s_{t+1} \gets \text{encode last image in $s_{t+1}$:} \, E_s(s_{t+1})$
+                }
+                \textit{Abduction}: $\hat{u}_{t+1} \gets E_u(s_{t+1}, s_{t}, a_t)$ \\
+                \textit{Action}: $a'_t \gets \text{choose random action} \neq a_t $ \\
+                \textit{Prediction}: $\hat{s}'_{t+1} \gets G_s(\hat{u}_{t+1}, s_{t}, a'_t)$ \\
+                $\hat{r}_{t+1} \gets E_u(\hat{s}'_{t+1}, s_{t}, a'_t)$ \\
+                \If{CAE is used}{
+                    $\hat{s}'_{t+1} \gets \text{decode last generated image in }\hat{s}'_{t+1} \text{ : } \, D_s(\hat{s}'_{t+1})$ \\ 
+                }
+                Insert $T' = (s_t, \hat{s}'_{t+1}, a'_t, \hat{r}_{t+1})$ in $B'$ \\
+            }
+    
+        Insert $B'$ in $\mathcal{D}'$ \\
+        $M' \gets$ size of $\mathcal{D}'$
+    }
+    
+    \BlankLine
+    \Return $\mathcal{D}'$
+\end{algorithm}
+
+\vfill
+
 \subsection{End-to-End CounTerfactual Data Generation}
 \label{sec:e2e}
 
 The second approach assumes that the noise in the system is known
-and focuses on directly collecting counterfactual states.
+in the training phase and focuses on directly collecting
+counterfactual states.
 
 This approach shifts the problem towards creating the most
 accurate and representative simulator, enhancing the
@@ -286,3 +389,11 @@ realism and diversity of the generated experiences.
 It is particularly useful when there is access to detailed
 knowledge about the noise in the system, enabling more
 precise simulation of the environment.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{figures/ch4/2.e2e.png}
+    \caption{e2e-CTDG framework in a situation where the states are
+    images only.}
+    \label{fig:wre}
+\end{figure}
