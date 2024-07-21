@@ -336,8 +336,9 @@ algorithm, such as D3QN or TD3.
 
 \begin{algorithm}[hb]
     \small
-    \caption{WRe-CTDG+CAE Counterfactual Augmentation} \label{alg1}
+    \caption{WRe-CTDG + CAE Counterfactual Augmentation} \label{alg1}
     
+    \vspace{1pt}
     \KwIn{dataset $\mathcal{D}$, augmentation factor $\beta > 1$, \\
     ($E_s$, $D_s$) CAE, ($G_s$, $E_u$) WRe-CTDG}
     \KwOut{augmented dataset $\mathcal{D}'$}
@@ -372,6 +373,7 @@ algorithm, such as D3QN or TD3.
     
     \BlankLine
     \Return $\mathcal{D}'$
+    \vspace{2pt}
 \end{algorithm}
 
 \vfill
@@ -387,7 +389,8 @@ This approach shifts the problem towards creating the most
 accurate and representative simulator, enhancing the
 realism and diversity of the generated experiences.
 It is particularly useful when there is access to detailed
-knowledge about the noise in the system, enabling more
+knowledge about the noise in the system,
+even in just a subset of the available data, enabling a more
 precise simulation of the environment.
 
 \begin{figure}[ht]
@@ -395,5 +398,121 @@ precise simulation of the environment.
     \includegraphics[width=\textwidth]{figures/ch4/2.e2e.png}
     \caption{e2e-CTDG framework in a situation where the states are
     images only.}
-    \label{fig:wre}
+    \label{fig:e2e}
 \end{figure}
+
+\subsubsection{Counterfactual Data Generation}
+
+The proposed strategy involves the employment of a Neural Network
+architecture, using two additional Convolutional Neural Networks
+for the tasks of downsampling and upsampling images,
+the upsampling layers are connected to the downsampling layers
+using the skip connection mechanism to improve the quality of the
+upsampled images.
+
+The inner neural network is designed to take as input the last state at
+time $t$ ($\mathcal{S}_{t}$), the last state at time $t+1$
+($\mathcal{S}_{t+1}$), the action $a$ at time $t$,
+and a counterfactual action $A_t \neq A_{t,\, CF}$.
+In the case of states composed by images only,
+the input of the neural network is $\mathcal{I}_{t}$ and $\mathcal{I}_{t+1}$
+downsampled and flattened for usage in the fully connected layers.
+In the case of states composed by numerical data only,
+the input of the neural network is $\mathcal{X}_{t}$ and $\mathcal{X}_{t+1}$
+and the CNN layers are not used.
+Finally, if the states are composed by a combination of images
+and numerical data,
+the input of the neural network is $\mathcal{X}_{t}$, $\mathcal{X}_{t+1}$ and
+the downsampled and flattened images $\mathcal{I}_{t}$ and $\mathcal{I}_{t+1}$.
+
+The output of the neural network is the counterfactual state
+$\hat{\mathcal{S}}_{t+1,\, CF}$ and the counterfactual reward
+$\hat{R}_{t+1,\, CF}$.
+If the states contain images, the output of the neural network
+is passed to the upsampling CNN layers to generate the counterfactual
+image $\hat{\mathcal{I}}_{t+1,\, CF}$.
+
+The loss function used to train the neural network is composed of
+two terms: the Mean Squared Error (MSE) between the predicted
+counterfactual state and the real counterfactual state and the
+MSE between the predicted counterfactual reward and the real
+counterfactual reward:
+\begin{equation}
+    \mathcal{L} = \mathbb{E} \left[ \left( \hat{\mathcal{S}}_{t+1,\, CF} - \mathcal{S}_{t+1,\, CF} \right)^2 \right] +
+    \mathbb{E} \left[ \left( \hat{R}_{t+1,\, CF} - R_{t+1,\, CF} \right)^2 \right]
+\end{equation}
+
+\subsubsection{Experience Generation through Counterfactual Augmentation}
+
+After understanding the causal mechanism \( f_s \),
+the abduction function, and the reward model \( f_r \),
+we can utilize WRe-CTDG and (optionally) the CAE
+for counterfactual
+data augmentation. The original dataset \( \mathcal{D} \)
+is expanded by a factor of \( \beta \)
+according to the method described in Algorithm \ref{alg1}.
+Specifically, if the CAE is used, for each sampled tuple
+\( T = (s_t, s_{t+1}, a_t, r_{t+1}) \in D \),
+the image encodings in $s_t$, so
+\( s_t[\text{`img'}] = \{I_{t-(N_{\mathcal{S}}-1)}, \ldots, I_{t-1}, I_t\} \),
+and \( I_{t+1} \in s_{t+1} \) are first computed using
+the encoder \( E_s \). Next, \( E_u \) and \( G_s \)
+are used to create a counterfactual
+sample through three steps:
+\begin{enumerate}
+    \item Perform abduction with \( E_u \) to estimate
+    the unknown factor \( \hat{u}_{t+1} \);
+    \item Use \( G_s \) to generate the counterfactual
+    states \( \hat{s}'_{t+1} \) given
+    \( \hat{u}_{t+1}, s_t \), and the counterfactual
+    action \( a'_t \);
+    \item Use \( E_u \) again to produce the reward
+    \( \hat{r}'_{t+1} \).
+\end{enumerate}
+
+Finally, if the CAE is used,
+the image \( \hat{I}'_{t+1} \) is generated using
+the decoder \( D_s \). Once the augmented dataset
+\( \mathcal{D}' \)
+is ready, it can be used to train any off-policy DRL
+algorithm, such as D3QN or TD3.
+
+\vspace{2cm}
+
+\begin{algorithm}[hb]
+    \small
+    \caption{e2e-CTDG Counterfactual Augmentation} \label{alg1}
+    
+    \vspace{1pt}
+    \KwIn{dataset $\mathcal{D}$, augmentation factor $\beta > 1$, $G_{e2e}$
+    e2e-CTDG}
+    \KwOut{augmented dataset $\mathcal{D}'$}
+    
+    
+    \BlankLine
+    $\mathcal{D'} \gets copy(\mathcal{D})$ \\
+    $M \gets$ size of $\mathcal{D}$ \\
+    $M' = M \gets$ size of $\mathcal{D'}$ \\
+    \While{$M' < \beta M$}{
+        Sample batch $B$ $\in \mathcal{D}$ \\
+            $B' \gets \emptyset$ 
+            
+            \ForEach{$ T = (s_t, s_{t+1}, a_t, s_{t+1,\,CF}, a_{t,\,CF}, r_{t+1,\,CF}) \in B$}{
+                \textit{Abduction}: $\hat{u}_{t+1} \gets E_u(s_{t+1}, s_{t}, a_t)$ \\
+                \textit{Action}: $a'_t \gets \text{choose random action} \neq a_t $ \\
+                \textit{Prediction}: $\hat{s}'_{t+1} \gets G_s(\hat{u}_{t+1}, s_{t}, a'_t)$ \\
+                $\hat{r}_{t+1} \gets E_u(\hat{s}'_{t+1}, s_{t}, a'_t)$ \\
+                \If{CAE is used}{
+                    $\hat{s}'_{t+1} \gets \text{decode last generated image in }\hat{s}'_{t+1} \text{ : } \, D_s(\hat{s}'_{t+1})$ \\ 
+                }
+                Insert $T' = (s_t, \hat{s}'_{t+1}, a'_t, \hat{r}_{t+1})$ in $B'$ \\
+            }
+    
+        Insert $B'$ in $\mathcal{D}'$ \\
+        $M' \gets$ size of $\mathcal{D}'$
+    }
+    
+    \BlankLine
+    \Return $\mathcal{D}'$
+    \vspace{2pt}
+\end{algorithm}
