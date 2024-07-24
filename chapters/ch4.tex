@@ -91,6 +91,174 @@ a method where the noise is known and counterfactual states are collected
 This approach shifts the problem towards developing the most accurate and
 representative simulator.
 
+\section{Simulation Environments}
+
+Here we introduce the simulation environments used in our experiments,
+which are essential for creating the dataset \( \mathcal{D} \) and
+training the offline DRL agents.
+
+Two categories of environments are considered: \textbf{Robotics} and
+\textbf{Healthcare}.
+
+\subsection{Robotics Environments}
+
+\textbf{MuJoCo} (Multi-Joint dynamics with Contact)
+is a physics engine developed by \cite{todorov2012mujoco}
+that has become a standard tool in reinforcement learning research.
+It provides a platform for simulating complex multi-joint dynamics
+and it's widely used in application areas which
+demand fast and accurate simulation of articulated
+structures interacting with their environment.
+
+The environments we focus on in this work are
+\textbf{Ant}, \textbf{HalfCheetah}, and \textbf{Pusher}
+and their wrapper can be found
+in the OpenAI Gym toolkit, as initially
+presented in \cite{brockman2016openaigym}.
+
+\subsubsection{Ant}
+
+The Ant environment \cite{antfarama} simulates a four-legged robot
+in a plane. A screenshot of the Ant environment
+is shown in Figure \ref{fig:ant}.\\
+\textbf{Description}: The Ant consists of a torso and four legs, each with
+two joints, resulting in a total of $8$ actuated joints.
+The goal is to coordinate the four legs to move forward (to the right)
+by applying torques to the eight hinges that connect the nine body parts,
+consisting of each leg's two segments and the torso.\\
+\textbf{State space}: The state space consist of positional values
+of different body parts of the ant, followed by the velocities
+of those individual parts (their derivatives)
+with all the positions ordered before all the velocities.\\
+\textbf{Action space}: The action space consists of $8$ continuous values
+included in $[-1, 1]$,
+corresponding to the torques applied to each one of the joints.\\
+\textbf{Reward function}: The reward is typically a combination
+of the \textbf{healthy} reward - a fixed reward for each timestep where
+the ant is alive and the \textbf{forward} reward - a reward for moving
+forward, all this minus the \textbf{ctrl} cost - a cost for applying
+for taking excessively large actions and, eventually, a \textbf{contact}
+cost - a negative reward applied if the external contact force is too large.
+The reward function is defined as:
+\begin{equation}
+    R = \textsf{healthy\_reward} + \textsf{forward\_reward} - \textsf{ctrl\_cost} \;[- \textsf{contact\_cost}]
+\end{equation}
+\textbf{Termination conditions}: The episode terminates
+if the ant falls over
+(typically defined as when the torso's z-coordinate falls below a threshold)
+or if any of the state space values is no longer finite.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.4\textwidth]{figures/ch4/ant.png}
+    \caption{Screenshot of the Ant environment.}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{antpic}}}
+    \label{fig:ant}
+\end{figure}
+
+\subsubsection{Half Cheetah}
+
+The Half Cheetah environment \cite{halfcheetahfarama} 
+simulates a 2-dimensional robot with two paws.
+A screenshot of the Half Cheetah environment is shown
+in Figure \ref{fig:halfcheetah}.\\
+\textbf{Description}: The Half Cheetah is a 2-dimensional robot
+composed of 9 body segments connected by 8 joints, including two paws
+The objective is to apply torques to these joints to propel the
+cheetah forward (to the right) as quickly as possible.
+The torso and head of the cheetah remain fixed
+and torque can be applied only to the other 6 joints,
+which include the connections between the torso and
+the front and back thighs, the thighs and shins, and the shins and feet.\\
+\textbf{State space}: The state space consists of positional values
+of different body parts of the Half Cheetah, followed by the velocities
+of those individual parts (their derivatives), with all the positions
+ordered before all the velocities.\\
+\textbf{Action space}: The action space consists of $6$ continuous values
+included in $[-1, 1]$,
+corresponding to the torques applied to each one of the joints.\\
+\textbf{Reward function}: The reward is typically
+ the \textbf{forward} reward
+- a reward for moving forward, minus the \textbf{ctrl} cost
+- a cost for applying excessively large actions.
+The reward function is defined as:
+\begin{equation}
+    R = \textsf{healthy\_reward} + \textsf{forward\_reward} - \textsf{ctrl\_cost}
+\end{equation}
+where
+\begin{equation}
+    \textsf{ctrl\_cost} = \textsf{ctrl\_cost\_weight} \times sum(\textsf{action}^2)
+\end{equation}
+and \textsf{ctrl\_cost\_weight} is a hyperparameter with a default value of $0.1$.\\
+\textbf{Termination conditions}: The episode terminates if the
+Half Cheetah falls over
+(typically defined as when the torso's z-coordinate falls below a threshold)
+or if any of the state space values is no longer finite.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.4\textwidth]{figures/ch4/halfcheetah.png}
+    \caption{Screenshot of the Half Cheetah environment.}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{halfcheetahpic}}}
+    \label{fig:halfcheetah}
+\end{figure}
+
+\subsubsection{Pusher}
+
+The Pusher environment \cite{pusherfarama} simulates
+a robotic arm tasked with pushing a puck to a target
+location on a plane.
+A screenshot of the Pusher environment is shown in Figure \ref{fig:pusher}.\\
+\textbf{Description}: The Pusher consists of a
+robotic arm with shoulder, elbow, forearm, and wrist joints,
+and its task is to move a puck to a specified
+target location on a flat surface.
+The arm must apply forces to push the puck while
+coordinating its own movement.\\
+\textbf{State space}: The state space consists
+of the angular rotation and velocities of the robotic arm's joints,
+the position of the fingertips, of the puck and the position of the target.\\
+\textbf{Action space}: The action space consists of $7$ continuous values,
+this time given in couples $(a,b)$ - where 
+$a$ and $b$ represent the torques applied at the hinge joints,
+included in $[-2, 2]$.\\
+\textbf{Reward function}: The reward consists of three components:
+\textbf{near} reward - which measures the distance between the
+pusher's fingertip and the object as a negative vector norm
+($-norm(\textsf{fingertip} - \textsf{target})$),
+\textbf{dist} reward - which measures the distance between
+the object and the target goal calculated as a negative norm
+($- norm(\textsf{object} - \textsf{target})$)
+and \textbf{control} reward - which penalizes large actions
+and is calculated as the negative squared Euclidean norm of the action
+($- sum(\textsf{action}^2)$). The total reward is:
+\begin{equation}
+    R = \textsf{reward\_dist} + 0.1 \times \textsf{reward\_control} + 0.5 \times \textsf{reward\_near}
+\end{equation}
+\textbf{Termination conditions}: The episode terminates when the puck
+reaches the target location, when 100 timesteps are reached
+or when any of the state space values is no longer finite.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.4\textwidth]{figures/ch4/pusher.png}
+    \caption{Screenshot of the Pusher environment.}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{pusherpic}}}
+    \label{fig:pusher}
+\end{figure}
+
+\subsection{Healthcare Environments}
+
+The only healthcare environment we focus on in this work is
+the \textbf{Diabetes} environment.
+
+\subsubsection{Diabetes}
+
+
+
 \section{Frameworks for Counterfactual Data Generation}
 
 In this section, we introduce two different approaches designed to
@@ -360,7 +528,7 @@ algorithm, such as D3QN or TD3.
                 \textit{Abduction}: $\hat{u}_{t+1} \gets E_u(s_{t+1}, s_{t}, a_t)$ \\
                 \textit{Action}: $a'_t \gets \text{choose random action} \neq a_t $ \\
                 \textit{Prediction}: $\hat{s}'_{t+1} \gets G_s(\hat{u}_{t+1}, s_{t}, a'_t)$ \\
-                $\hat{r}_{t+1} \gets E_u(\hat{s}'_{t+1}, s_{t}, a'_t)$ \\
+                $\hat{r}'_{t+1} \gets E_u(\hat{s}'_{t+1}, s_{t}, a'_t)$ \\
                 \If{CAE is used}{
                     $\hat{s}'_{t+1} \gets \text{decode last generated image in }\hat{s}'_{t+1} \text{ : } \, D_s(\hat{s}'_{t+1})$ \\ 
                 }
@@ -442,46 +610,38 @@ counterfactual reward:
     \mathbb{E} \left[ \left( \hat{R}_{t+1,\, CF} - R_{t+1,\, CF} \right)^2 \right]
 \end{equation}
 
+The e2e-CTDG model takes as input the current state $s_t$,
+the next state $s_{t+1}$, the original action $a_t$,
+and the counterfactual action $a't$. It then produces a counterfactual
+next state $\hat{s}{t+1}'$ and a counterfactual reward $\hat{r}_{t+1}'$.
+This process effectively allows the algorithm to ask "What if?"
+questions about the environment, simulating alternative scenarios
+that didn't actually occur but could have occurred if different actions
+had been taken. 
+
 \subsubsection{Experience Generation through Counterfactual Augmentation}
 
-After understanding the causal mechanism \( f_s \),
-the abduction function, and the reward model \( f_r \),
-we can utilize WRe-CTDG and (optionally) the CAE
-for counterfactual
-data augmentation. The original dataset \( \mathcal{D} \)
-is expanded by a factor of \( \beta \)
-according to the method described in Algorithm \ref{alg1}.
-Specifically, if the CAE is used, for each sampled tuple
-\( T = (s_t, s_{t+1}, a_t, r_{t+1}) \in D \),
-the image encodings in $s_t$, so
-\( s_t[\text{`img'}] = \{I_{t-(N_{\mathcal{S}}-1)}, \ldots, I_{t-1}, I_t\} \),
-and \( I_{t+1} \in s_{t+1} \) are first computed using
-the encoder \( E_s \). Next, \( E_u \) and \( G_s \)
-are used to create a counterfactual
-sample through three steps:
-\begin{enumerate}
-    \item Perform abduction with \( E_u \) to estimate
-    the unknown factor \( \hat{u}_{t+1} \);
-    \item Use \( G_s \) to generate the counterfactual
-    states \( \hat{s}'_{t+1} \) given
-    \( \hat{u}_{t+1}, s_t \), and the counterfactual
-    action \( a'_t \);
-    \item Use \( E_u \) again to produce the reward
-    \( \hat{r}'_{t+1} \).
-\end{enumerate}
-
-Finally, if the CAE is used,
-the image \( \hat{I}'_{t+1} \) is generated using
-the decoder \( D_s \). Once the augmented dataset
-\( \mathcal{D}' \)
-is ready, it can be used to train any off-policy DRL
-algorithm, such as D3QN or TD3.
-
-\vspace{2cm}
+After understanding the end-to-end causal mechanism of the e2e-CTDG model,
+we can utilize it for counterfactual data augmentation.
+The original dataset $\mathcal{D}$ is expanded by a factor of $\beta$
+according to the method described in Algorithm \ref{alg2}.
+For each sampled tuple
+$T = (s_t, s_{t+1}, a_t, a_{t}') \in \mathcal{D}$,
+the process is simplified compared to the WRe-CTDG method.
+Instead of separate encoding and generation steps,
+the e2e-CTDG model $G_{e2e}$ directly generates the counterfactual
+state $\hat{s}_{t+1}'$ and reward $\hat{r}_{t+1}'$
+given the current state $s_t$, next state $s_{t+1}$,
+current action $a_t$, and a randomly chosen counterfactual action $a'_t$.
+The abduction step here is implicit in the generation process.
+This end-to-end approach eliminates the need for explicit
+separate estimation of unknown factors.
+Once the augmented dataset $\mathcal{D}'$ is ready, it can be used to
+train any off-policy DRL algorithm, such as D3QN or TD3.
 
 \begin{algorithm}[hb]
     \small
-    \caption{e2e-CTDG Counterfactual Augmentation} \label{alg1}
+    \caption{e2e-CTDG Counterfactual Augmentation} \label{alg2}
     
     \vspace{1pt}
     \KwIn{dataset $\mathcal{D}$, augmentation factor $\beta > 1$, $G_{e2e}$
@@ -497,14 +657,9 @@ algorithm, such as D3QN or TD3.
         Sample batch $B$ $\in \mathcal{D}$ \\
             $B' \gets \emptyset$ 
             
-            \ForEach{$ T = (s_t, s_{t+1}, a_t, s_{t+1,\,CF}, a_{t,\,CF}, r_{t+1,\,CF}) \in B$}{
-                \textit{Abduction}: $\hat{u}_{t+1} \gets E_u(s_{t+1}, s_{t}, a_t)$ \\
+            \ForEach{$ T = (s_t, s_{t+1}, a_t, s'_{t+1}, a'_{t}, r'_{t+1}) \in B$}{
                 \textit{Action}: $a'_t \gets \text{choose random action} \neq a_t $ \\
-                \textit{Prediction}: $\hat{s}'_{t+1} \gets G_s(\hat{u}_{t+1}, s_{t}, a'_t)$ \\
-                $\hat{r}_{t+1} \gets E_u(\hat{s}'_{t+1}, s_{t}, a'_t)$ \\
-                \If{CAE is used}{
-                    $\hat{s}'_{t+1} \gets \text{decode last generated image in }\hat{s}'_{t+1} \text{ : } \, D_s(\hat{s}'_{t+1})$ \\ 
-                }
+                \textit{Prediction}: $(\hat{s}'_{t+1}, \hat{r}'_{t+1}) \gets G_{e2e} (s_t, s_{t+1}, a_t, a'_{t})$ \\
                 Insert $T' = (s_t, \hat{s}'_{t+1}, a'_t, \hat{r}_{t+1})$ in $B'$ \\
             }
     
