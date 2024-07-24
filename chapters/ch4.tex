@@ -257,7 +257,59 @@ the \textbf{Diabetes} environment.
 
 \subsubsection{Diabetes}
 
+In our study, we employ a simulated dataset that models
+the progression of type II diabetes and the effects of antiglycaemic drugs,
+as seen in \cite{sim2012}.
+This simulation represents a simplified version of a longitudinal
+medical study with time-varying confounders.
 
+The key features of the simulated dataset:
+
+\begin{enumerate}
+    \item Variables:
+    \begin{itemize}
+        \item $U_0$: Binary indicator of subject's health status
+        prior to randomization (unmeasured)
+        \item $A_0,\; A_1$: Binary indicators for antiglycaemic
+        drug prescription at visits 0 and 1 (actions)
+        \item $L_1$: Binary indicator for anaemia at visit 1 (state)
+        \item $Y$: $\log HbA_{1c}$ measured at visit 2 (outcome) (final state)
+    \end{itemize}
+
+    \item Data generation process:
+    \begin{itemize}
+        \item $U_0 \sim \text{Bernoulli}(0.4)$
+        \item $A_0 \sim \text{Bernoulli}(0.5)$ (randomized initial treatment)
+        \item $L_1 | U_0, A_0 \sim \text{Bernoulli}(P(L_1 = 1) = 0.25 + 0.3A_0 - 0.2U_0 - 0.05A_0U_0)$
+        \item $A_1 | A_0, L_1 \sim \text{Bernoulli}(P(A_1 = 1) = 0.4 + 0.5A_0 - 0.3L_1 - 0.4A_0L_1)$
+        \item $Y | U_0, A_0, A_1 \sim \text{Normal}(\mu = 2.5 - 0.5A_0 - 0.75A_1 + 0.2A_0A_1 - U_0, \sigma = 0.2)$
+    \end{itemize}
+\end{enumerate}
+This dataset captures key aspects of diabetes treatment, including:
+\begin{itemize}
+    \item The effect of initial health status on anaemia risk
+    and $HbA_{1c}$ levels
+    \item The potential side effect of antiglycaemic drugs causing anaemia
+    \item The influence of anaemia on subsequent treatment decisions
+    \item The causal effect of treatment on $HbA_{1c}$ levels
+\end{itemize}
+The simulation satisfies the `no unmeasured confounding' assumption,
+making it suitable for evaluating causal inference methods.
+In Figure \ref{fig:diabetes1}, we present a tree
+depicting the expected values of the variables out of
+a total of $2000$ subjects.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.65\textwidth]{figures/ch4/diabetes1.png}
+    \caption{Tree diagram of the expected numbers
+    (out of a total of 2000 subjects) along each
+    branch for the distribution from which the diabetes
+    dataset was generated.}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{sim2012}}}
+    \label{fig:diabetes1}
+\end{figure}
 
 \section{Frameworks for Counterfactual Data Generation}
 
