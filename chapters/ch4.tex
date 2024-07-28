@@ -25,9 +25,9 @@ States can be represented in various forms:
 \end{itemize}
 The number of images (or vectors) in the state representation
 is denoted by \( N_{\mathcal{S}} \) such that
-\[ s_t = \{ \mathcal{S}_{t-(N_{\mathcal{S}}-1)}, \ldots,
+\[ s_t = \{ \mathcal{S}_{t-(N_{\mathcal{S}-1})}, \ldots,
 \mathcal{S}_{t-1}, \mathcal{S}_t \} \text{  and  }
-s_{t+1} = \{ \mathcal{S}_{t-(N_{\mathcal{S}}-2)}, \ldots,
+s_{t+1} = \{ \mathcal{S}_{t-(N_{\mathcal{S}-2})}, \ldots,
 \mathcal{S}_t, \mathcal{S}_{t+1} \} \]
 \[
     \text{where } \mathcal{S}_t =
@@ -264,7 +264,6 @@ This simulation represents a simplified version of a longitudinal
 medical study with time-varying confounders.
 
 The key features of the simulated dataset:
-
 \begin{enumerate}
     \item Variables:
     \begin{itemize}
@@ -285,6 +284,44 @@ The key features of the simulated dataset:
         \item $Y | U_0, A_0, A_1 \sim \text{Normal}(\mu = 2.5 - 0.5A_0 - 0.75A_1 + 0.2A_0A_1 - U_0, \sigma = 0.2)$
     \end{itemize}
 \end{enumerate}
+
+We want to estimate the counterfactual mean of \( Y \) under
+different treatment strategies \( (a_0, a_1) \).
+
+The counterfactual means are calculated by averaging over the
+distribution of \( U_0 \):
+\begin{equation}
+\mathbb{E}[Y(a_0, a_1)] = 2.5 - 0.4 - 0.5a_0 - 0.75a_1 + 0.2a_0a_1.
+\end{equation}
+Alternatively, given \( U_{0,i} \), the potential outcomes
+\( Y_i(a_0, a_1) \) can be considered as being independently
+generated for each \((a_0, a_1)\) and for each \(i\) from
+a normal distribution with a mean of
+\( 2.5 - 0.5a_0 - 0.75a_1 + 0.2a_0a_1 + U_{0,i} \)
+and a standard deviation of $0.2$.
+
+The simulation satisfies the `no unmeasured confounding' assumption,
+making it suitable for evaluating causal inference methods.
+This is achieved by ensuring that the data generating models for
+$A_0$ and $A_1$ do not include $U_0$.
+Thus, \( A_0 \) is independent of \( U_0 \) and \( A_1 \) is
+independent of \( U_0 \) given \( L_1 \). Since, conditional on
+\( U_0 \), the variation in \( Y(a_0, a_1) \) is independent of
+all other random variables, this implies that \( A_0 \) is independent
+of \( Y(a_0, a_1) \) and \( A_1 \) is independent of \( Y(a_0, a_1) \)
+given \( A_0 \) and \( L_1 \).
+In Figure \ref{fig:diabetes1} the SCM for the diabetes dataset
+is presented.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.25\textwidth]{figures/ch4/diabetes1.png}
+    \caption{Structural Causal Model for the diabetes dataset.}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{sim2012}}}
+    \label{fig:diabetes1}
+\end{figure}
+
 This dataset captures key aspects of diabetes treatment, including:
 \begin{itemize}
     \item The effect of initial health status on anaemia risk
@@ -293,22 +330,20 @@ This dataset captures key aspects of diabetes treatment, including:
     \item The influence of anaemia on subsequent treatment decisions
     \item The causal effect of treatment on $HbA_{1c}$ levels
 \end{itemize}
-The simulation satisfies the `no unmeasured confounding' assumption,
-making it suitable for evaluating causal inference methods.
-In Figure \ref{fig:diabetes1}, we present a tree
+In Figure \ref{fig:diabetes2}, we present a tree
 depicting the expected values of the variables out of
 a total of $2000$ subjects.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.65\textwidth]{figures/ch4/diabetes1.png}
+    \includegraphics[width=.65\textwidth]{figures/ch4/diabetes2.png}
     \caption{Tree diagram of the expected numbers
     (out of a total of 2000 subjects) along each
     branch for the distribution from which the diabetes
     dataset was generated.}
     \vspace{-10px}
     \caption*{\scriptsize{Source: \cite{sim2012}}}
-    \label{fig:diabetes1}
+    \label{fig:diabetes2}
 \end{figure}
 
 \section{Frameworks for Counterfactual Data Generation}
@@ -664,9 +699,9 @@ counterfactual reward:
 
 The e2e-CTDG model takes as input the current state $s_t$,
 the next state $s_{t+1}$, the original action $a_t$,
-and the counterfactual action $a't$. It then produces a counterfactual
-next state $\hat{s}{t+1}'$ and a counterfactual reward $\hat{r}_{t+1}'$.
-This process effectively allows the algorithm to ask "What if?"
+and the counterfactual action $a_t'$. It then produces a counterfactual
+next state $\hat{s}_{t+1}'$ and a counterfactual reward $\hat{r}_{t+1}'$.
+This process effectively allows the algorithm to ask ``What if?''
 questions about the environment, simulating alternative scenarios
 that didn't actually occur but could have occurred if different actions
 had been taken. 
