@@ -111,50 +111,56 @@ demand fast and accurate simulation of articulated
 structures interacting with their environment.
 
 The environments we focus on in this work are
-\textbf{Ant}, \textbf{HalfCheetah}, and \textbf{Pusher}
-and their wrapper can be found
+\textbf{HalfCheetah}, and \textbf{Pusher},
+their wrapper can be found
 in the OpenAI Gym toolkit, as initially
 presented in \cite{brockman2016openaigym}.
+In addition to these, we also include \textbf{Acrobot},
+a classic control problem also available in the OpenAI Gym
+toolkit and based on the work of \cite{sutton1998}.
+Its inclusion provides
+a contrast to the more complex MuJoCo environments and
+allows us to test our methods on a wider range of
+control problems.
 
-\subsubsection{Ant}
+\subsubsection{Acrobot}
 
-The Ant environment \cite{antfarama} simulates a four-legged robot
-in a plane. A screenshot of the Ant environment
-is shown in Figure \ref{fig:ant}.\\
-\textbf{Description}: The Ant consists of a torso and four legs, each with
-two joints, resulting in a total of $8$ actuated joints.
-The goal is to coordinate the four legs to move forward (to the right)
-by applying torques to the eight hinges that connect the nine body parts,
-consisting of each leg's two segments and the torso.\\
-\textbf{State space}: The state space consist of positional values
-of different body parts of the ant, followed by the velocities
-of those individual parts (their derivatives)
-with all the positions ordered before all the velocities.\\
-\textbf{Action space}: The action space consists of $8$ continuous values
-included in $[-1, 1]$,
-corresponding to the torques applied to each one of the joints.\\
-\textbf{Reward function}: The reward is typically a combination
-of the \textbf{healthy} reward - a fixed reward for each timestep where
-the ant is alive and the \textbf{forward} reward - a reward for moving
-forward, all this minus the \textbf{ctrl} cost - a cost for applying
-for taking excessively large actions and, eventually, a \textbf{contact}
-cost - a negative reward applied if the external contact force is too large.
-The reward function is defined as:
+The Acrobot environment \cite{acrobotfarama} simulates a two-link
+pendulum with only the second joint actuated. A screenshot of the
+Acrobot environment is shown in Figure \ref{fig:acrobot}.\\
+\textbf{Description}: The Acrobot system consists of two links
+connected linearly to form a chain, with one end of the chain fixed
+and the other end free. The joint between the two links is actuated.
+The goal is to swing the free end of the chain above the fixed base
+by applying torques on the actuated joint.\\
+\textbf{State space}: The state space consists of 6 continuous variables:
+\begin{itemize}
+    \item $\cos(\alpha_t)$, $\sin(\alpha_t)$, $\cos(\beta_t)$, $\sin(\beta_t)$
+    \item Angular velocity of $\alpha_t$ and $\beta_t$
+\end{itemize}
+The placement of the angles can be seen in Figure \ref{fig:acrobot}.
+The angles are measured counterclockwise.\\
+\textbf{Action space}: The action space is discrete with 3 possible actions:
+\begin{enumerate}
+    \item Apply a negative torque of -1 to the actuated joint
+    \item Apply no torque (0) to the actuated joint
+    \item Apply a positive torque of +1 to the actuated joint
+\end{enumerate}
+\textbf{Reward function}: The reward function is defined as:
 \begin{equation}
-    R = \textsf{healthy\_reward} + \textsf{forward\_reward} - \textsf{ctrl\_cost} \;[- \textsf{contact\_cost}]
+    R = -1 \times \text{ number of timesteps (with a limit on 100)}
 \end{equation}
-\textbf{Termination conditions}: The episode terminates
-if the ant falls over
-(typically defined as when the torso's z-coordinate falls below a threshold)
-or if any of the state space values is no longer finite.
+\textbf{Termination conditions}: The episode terminates when either
+the goal position is reached or the maximum number
+of timesteps (500) is reached.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.4\textwidth]{figures/ch4/ant.png}
-    \caption{Screenshot of the Ant environment.}
+    \includegraphics[width=.45\textwidth]{figures/ch4/acrobotpic.png}
+    \caption{Screenshot of the Acrobot environment with information about the state.}
     \vspace{-10px}
-    \caption*{\scriptsize{Source: \cite{antpic}}}
-    \label{fig:ant}
+    \caption*{\scriptsize{Source: \cite{acrobotpic}}}
+    \label{fig:acrobot}
 \end{figure}
 
 \subsubsection{Half Cheetah}
@@ -315,7 +321,7 @@ is presented.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.25\textwidth]{figures/ch4/diabetes1.png}
+    \includegraphics[width=.2\textwidth]{figures/ch4/diabetes1.png}
     \caption{Structural Causal Model for the diabetes dataset.}
     \vspace{-10px}
     \caption*{\scriptsize{Source: \cite{sim2012}}}
@@ -336,7 +342,7 @@ a total of $2000$ subjects.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.65\textwidth]{figures/ch4/diabetes2.png}
+    \includegraphics[width=.52\textwidth]{figures/ch4/diabetes2.png}
     \caption{Tree diagram of the expected numbers
     (out of a total of 2000 subjects) along each
     branch for the distribution from which the diabetes
@@ -587,8 +593,6 @@ the decoder \( D_s \). Once the augmented dataset
 is ready, it can be used to train any off-policy DRL
 algorithm, such as D3QN or TD3.
 
-\vspace{2cm}
-
 \begin{algorithm}[hb]
     \small
     \caption{WRe-CTDG + CAE Counterfactual Augmentation} \label{alg1}
@@ -630,8 +634,6 @@ algorithm, such as D3QN or TD3.
     \Return $\mathcal{D}'$
     \vspace{2pt}
 \end{algorithm}
-
-\vfill
 
 \subsection{End-to-End CounTerfactual Data Generation}
 \label{sec:e2e}
@@ -713,7 +715,7 @@ we can utilize it for counterfactual data augmentation.
 The original dataset $\mathcal{D}$ is expanded by a factor of $\beta$
 according to the method described in Algorithm \ref{alg2}.
 For each sampled tuple
-$T = (s_t, s_{t+1}, a_t, a_{t}') \in \mathcal{D}$,
+$T = (s_t, s_{t+1}, a_t) \in \mathcal{D}$,
 the process is simplified compared to the WRe-CTDG method.
 Instead of separate encoding and generation steps,
 the e2e-CTDG model $G_{e2e}$ directly generates the counterfactual
@@ -744,10 +746,10 @@ train any off-policy DRL algorithm, such as D3QN or TD3.
         Sample batch $B$ $\in \mathcal{D}$ \\
             $B' \gets \emptyset$ 
             
-            \ForEach{$ T = (s_t, s_{t+1}, a_t, s'_{t+1}, a'_{t}, r'_{t+1}) \in B$}{
+            \ForEach{$ T = (s_t, s_{t+1}, a_t) \in B$}{
                 \textit{Action}: $a'_t \gets \text{choose random action} \neq a_t $ \\
                 \textit{Prediction}: $(\hat{s}'_{t+1}, \hat{r}'_{t+1}) \gets G_{e2e} (s_t, s_{t+1}, a_t, a'_{t})$ \\
-                Insert $T' = (s_t, \hat{s}'_{t+1}, a'_t, \hat{r}_{t+1})$ in $B'$ \\
+                Insert $T' = (s_t, \hat{s}'_{t+1}, a'_t, \hat{r}_{t+1}')$ in $B'$ \\
             }
     
         Insert $B'$ in $\mathcal{D}'$ \\
