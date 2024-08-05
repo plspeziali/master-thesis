@@ -306,27 +306,19 @@ a normal distribution with a mean of
 \( 2.5 - 0.5a_0 - 0.75a_1 + 0.2a_0a_1 + U_{0,i} \)
 and a standard deviation of $0.2$.
 
-The simulation satisfies the `no unmeasured confounding' assumption,
-making it suitable for evaluating causal inference methods.
-This is achieved by ensuring that the data generating models for
-$A_0$ and $A_1$ do not include $U_0$.
-Thus, \( A_0 \) is independent of \( U_0 \) and \( A_1 \) is
-independent of \( U_0 \) given \( L_1 \). Since, conditional on
-\( U_0 \), the variation in \( Y(a_0, a_1) \) is independent of
-all other random variables, this implies that \( A_0 \) is independent
-of \( Y(a_0, a_1) \) and \( A_1 \) is independent of \( Y(a_0, a_1) \)
-given \( A_0 \) and \( L_1 \).
 In Figure \ref{fig:diabetes1} the SCM for the diabetes dataset
 is presented.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.2\textwidth]{figures/ch4/diabetes1.png}
+    \includegraphics[width=.21\textwidth]{figures/ch4/diabetes1.png}
     \caption{Structural Causal Model for the diabetes dataset.}
     \vspace{-10px}
     \caption*{\scriptsize{Source: \cite{sim2012}}}
     \label{fig:diabetes1}
 \end{figure}
+
+\vspace{2cm}
 
 This dataset captures key aspects of diabetes treatment, including:
 \begin{itemize}
@@ -342,7 +334,7 @@ a total of $2000$ subjects.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.52\textwidth]{figures/ch4/diabetes2.png}
+    \includegraphics[width=.65\textwidth]{figures/ch4/diabetes2.png}
     \caption{Tree diagram of the expected numbers
     (out of a total of 2000 subjects) along each
     branch for the distribution from which the diabetes
@@ -703,7 +695,7 @@ The e2e-CTDG model takes as input the current state $s_t$,
 the next state $s_{t+1}$, the original action $a_t$,
 and the counterfactual action $a_t'$. It then produces a counterfactual
 next state $\hat{s}_{t+1}'$ and a counterfactual reward $\hat{r}_{t+1}'$.
-This process effectively allows the algorithm to ask ``What if?''
+This process effectively allows the algorithm to ask ``what if?''
 questions about the environment, simulating alternative scenarios
 that didn't actually occur but could have occurred if different actions
 had been taken. 

@@ -1,0 +1,102 @@
+\section{Data Scarcity and Noisy Datasets in Machine Learning}
+
+\textbf{Machine Learning} (ML) is reshaping our world in ways both
+subtle and profound. From the personalized recommendations we receive
+on streaming platforms to the autonomous vehicles navigating in real streets,
+ML algorithms are becoming an integral part of our daily lives.
+Yet, as these systems tackle increasingly complex challenges,
+they reveal their limitations.
+One of the most pressing issues is the critical need for large, 
+high-quality datasets, a requirement that is often difficult to
+meet in real-world scenarios.
+
+The \textbf{scarcity} of comprehensive datasets poses a significant
+obstacle in many fields, including healthcare and robotics.
+In \textbf{healthcare}, privacy concerns and limited access to patient
+records hinder the collection of diverse and extensive data.
+Similarly, in \textbf{robotics}, certain experimental data may be difficult
+or costly to obtain, particularly in scenarios involving complex
+physical interactions or rare events. This data scarcity can lead
+to underfitted or non-generalizable models, compromising their
+accuracy and utility in practical applications.
+
+Moreover, even when substantial datasets are available, they
+often suffer from \textbf{noise and inconsistencies}. Real-world data
+collection processes are rarely perfect, resulting in datasets
+that may contain errors, outliers, or biased samples.
+These imperfections can significantly impact the performance of ML models,
+leading to unreliable predictions or decisions. The challenge of dealing
+with noisy datasets is particularly acute in offline
+\textbf{Deep Reinforcement Learning} (DRL) scenarios, where agents must learn
+optimal policies from pre-collected experiences without the ability
+to interact further with the environment.
+
+To address these challenges, researchers have long employed
+\textbf{data augmentation techniques}. Traditional data augmentation
+methods involve
+applying various transformations to existing data points to artificially
+expand the dataset. In image processing, for instance, this might involve
+rotations, flips, or color adjustments. While these techniques have proven
+effective in many applications, they have limitations.
+Notably, not all transformations produce valid or realistic data points,
+especially in domains with complex underlying structures or causal relationships.
+
+This is where the integration of \textbf{Causal Inference} into
+ML frameworks offers a
+promising solution. Causal inference focuses on understanding the
+cause-and-effect relationships between variables, rather
+than merely identifying correlations. By leveraging causal inference,
+we can develop more sophisticated data augmentation techniques that
+respect the underlying causal structure of the data-generating process.
+
+In this thesis, we propose novel approaches to address the
+challenges of data scarcity and noisy datasets by leveraging
+causal inference techniques. We introduce two frameworks for
+counterfactual data generation:
+the \textbf{Wasserstein Reward-enhanced Counterfactual Data Generation}
+(WRe-CTDG) and the \textbf{End-to-End Counterfactual Data Generation} (e2e-CTDG).
+These methods aim to augment pre-collected datasets by generating additional
+high-fidelity experiences that align with the environment's underlying
+transition dynamics.
+
+Our work focuses specifically on offline DRL scenarios, where agents
+are trained using pre-collected datasets of experiences.
+We explore applications in both robotics environments
+(such as Acrobot, Half Cheetah, and Pusher) and healthcare scenarios
+(such as diabetes treatment simulation).
+These domains present unique challenges due to their complex
+dynamics and the potential consequences of incorrect decisions.
+
+By incorporating \textbf{Structural Causal Models} (SCMs) and
+\textbf{Generative Adversarial Networks} (GANs) into our frameworks,
+we develop techniques to infer causal relationships and generate counterfactual
+samples. This approach allows us to create synthetic data points
+that are not mere transformations of existing data, but rather plausible
+alternative scenarios that could have occurred under different circumstances.
+This is particularly valuable in offline DRL, where the ability to explore
+``what-if'' scenarios can significantly enhance the robustness
+and generalization capabilities of learned policies.
+
+\section{Structure of the Thesis}
+
+The following chapters are organized as follows:
+\begin{itemize}
+    \item In \textbf{Chapter 2}, we provide an overview of the State of the Art
+    in Offline Reinforcement Learning, Data Augmentation and Generation Techniques,
+    and Counterfactual Reasoning in Data Generation.
+    \item In \textbf{Chapter 3}, we introduce the theoretical foundations
+    of the tecnologies used in our proposed frameworks,
+    including Structural Causal Models,
+    Generative Adversarial Networks,
+    and Deep Reinforcement Learning algorithms.
+    \item In \textbf{Chapter 4}, we present the WRe-CTDG
+    and the e2e-CTDG frameworks,
+    detailing their architectures and training procedures.
+    We also present the environments and datasets used for evaluation.
+    \item In \textbf{Chapter 5}, we present a comprehensive description
+    of the machines and neural networks employed in our experiments,
+    followed by a detailed overview of the experimental results.
+    \item In \textbf{Chapter 6}, we discuss the implications of our findings,
+    the limitations of our approaches,
+    and potential directions for future research.
+\end{itemize}
