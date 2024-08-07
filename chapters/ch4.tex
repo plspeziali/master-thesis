@@ -570,8 +570,8 @@ according to the method described in Algorithm \ref{alg1}.
 Specifically, if the CAE is used, for each sampled tuple
 \( T = (s_t, s_{t+1}, a_t, r_{t+1}) \in D \),
 the image encodings in $s_t$, so
-\( s_t[\text{`img'}] = \{I_{t-(N_{\mathcal{S}}-1)}, \ldots, I_{t-1}, I_t\} \),
-and \( I_{t+1} \in s_{t+1} \) are first computed using
+\( s_t[\text{`img'}] = \{\mathcal{I}_{t-(N_{\mathcal{S}}-1)}, \ldots, \mathcal{I}_{t-1}, \mathcal{I}_t\} \),
+and \( \mathcal{I}_{t+1} \in s_{t+1} \) are first computed using
 the encoder \( E_s \). Next, \( E_u \) and \( G_s \)
 are used to create a counterfactual
 sample through three steps:
@@ -587,7 +587,7 @@ sample through three steps:
 \end{enumerate}
 
 Finally, if the CAE is used,
-the image \( \hat{I}'_{t+1} \) is generated using
+the image \( \hat{\mathcal{I}}'_{t+1} \) is generated using
 the decoder \( D_s \). Once the augmented dataset
 \( \mathcal{D}' \)
 is ready, it can be used to train any off-policy DRL

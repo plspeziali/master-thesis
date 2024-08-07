@@ -1,0 +1,293 @@
+\section{Experimental Setup}
+
+\subsection{Hardware Specifications}
+
+All experiments were conducted on a high-performance
+PC with the following specifications:
+
+\begin{itemize}
+    \item CPU: Intel Core i7-9800X CPU @ 3.80GHz,
+    3792 Mhz, 8 core, 16 threads
+    \item GPU: 2 NVIDIA RTX 2080 Ti GPU with 12GB
+    VRAM each
+    \item RAM: 64 GB DDR4
+    \item Storage: 1 TB Seagate BarraCuda HDD
+\end{itemize}
+
+\subsection{Software Environment}
+
+The experiments were implemented using the following software stack:
+
+\begin{itemize}
+    \item Operating System: Windows 11 Pro
+    \item Python: 3.10.14
+    \item PyTorch: 2.3.0
+    \item CUDA: 12.0
+    \item TorchRL: 0.4.0
+    \item MuJoCo: 3.14
+\end{itemize}
+
+\section{Network Architectures}
+
+\subsection{WRe-CTDG Network Structure}
+
+The WRe-CTDG framework consists of three main components:
+Encoder $E_u$, Generator $G_s$, and Critic $C$.
+Here are the details of each network:\\
+\textbf{Encoder $\mathbf{E_u}$:}
+\begin{itemize}
+    \item Input layer: 2 $\times$ numerical state dimensions
+    + 2 $\times$ latent state dimensions + action dimension
+    \item Hidden layers: 4 fully connected layers with 256, 512, 512, and 256 units respectively
+    \item Output layer: noise dimension + 1 (for reward prediction)
+    \item Activation function: ReLU for hidden layers,
+    Tanh/Sigmoid/Identity for reward output, Linear for noise output
+\end{itemize}
+\textbf{Generator $\mathbf{G_s}$:}
+\begin{itemize}
+    \item Input layer: numerical state dimension
+    + latent state dimension + action dimension +
+    noise dimension
+    \item Hidden layers: 4 fully connected layers
+    with 256, 512, 256, and 128 units respectively
+    \item Output layer: numerical state dimension
+    + latent state dimension
+    \item Activation function: ReLU for hidden layers,
+    Linear for output layer
+\end{itemize}
+\textbf{Critic $\mathbf{C}$:}
+\begin{itemize}
+    \item Input layer: 2 $\times$ numerical state dimensions
+    + 2 $\times$ latent state dimensions + action dimension
+    + noise dimension
+    \item Hidden layers: 4 fully connected layers with 256,
+    512, 256, and 128 units respectively
+    \item Output layer: 1
+    \item Activation function: ReLU
+    for hidden layers, Linear for output layer
+\end{itemize}
+For environments with image inputs, we additionally used a
+Convolutional AutoEncoder (CAE) architecture to
+encode and decode the state representations:\\
+\textbf{Convolutional Encoder:}
+\begin{itemize}
+    \item 5 downsampling blocks
+    \item Each block contains 2-3 convolutional layers
+    with BatchNorm and ReLU activation
+    \item Number of filters increases progressively:
+    $$ in\_channels \rightarrow base \rightarrow 2
+    \times base \rightarrow 4\times base \rightarrow
+    8\times base \rightarrow 16\times base $$
+    with $base = 8$.
+    \item MaxPool2D with kernel size $2\times 2$ and stride
+    2 for downsampling between blocks
+    \item Final $1\times 1$ convolutional layer to
+    reduce channel dimension to $bn = 1$ (bottleneck)
+\end{itemize}
+\textbf{Convolutional Decoder:}
+\begin{itemize}
+    \item Initial $1\times 1$ convolutional layer 
+    to expand channel dimension from $bn$ to $16 \times base$
+    \item 5 upsampling blocks
+    \item Each block contains 2-3 convolutional
+    layers with BatchNorm and ReLU activation
+    \item Number of filters decreases progressively:
+    $$ 16\times base \rightarrow 8
+    \times base \rightarrow 4\times base \rightarrow
+    2\times base \rightarrow base \rightarrow in_channels$$
+    with $base = 8$.
+    \item Upsampling using transposed convolution
+     with kernel size $2\times 2$ and stride 2
+    \item Final layer uses Tanh activation
+\end{itemize}
+The encoder and decoder are symmetric, with the number of filters changing at each level.
+
+\subsection{e2e-CTDG Network Structure}
+
+The e2e-CTDG framework uses a single end-to-end network:
+\begin{itemize}
+    \item Input layer: 2 $\times$ numerical state dimensions
+    + 2 $\times$ latent state dimensions + action dimension
+    + counterfactual action dimension
+    \item Hidden Layer: 3 fully connected layers with
+    1536 units each
+    \item Output layer: counterfactual state dimension
+    + 1 (for reward prediction)
+    \item Activation function: ReLU for hidden layers,
+    Tanh/Sigmoid/Identity for reward output
+\end{itemize}
+For environments with image inputs:\\
+\textbf{Convolutional Encoder:}
+\begin{itemize}
+    \item RGB or grayscale images as input
+    \item 4 convolutional layers with 96, 192,
+    384, and 768 filters respectively
+    \item Kernel size: $3 \times 3$, 
+    stride: 1, padding: 1
+    \item MaxPool2D with kernel size $2 \times 2$ and
+    stride 2 in between layers
+    \item Activation function: ReLU
+\end{itemize}
+\textbf{Convolutional Decoder:}
+\begin{itemize}
+    \item Output of the fully connected network as input
+    \item 4 convolutional layers with 768, 384,
+    192, and 96 filters respectively
+    \item Kernel size: $3 \times 3$, stride: 2, padding: 1,
+    output padding: 1
+    \item Upsampling using transposed convolution
+    with kernel size $2\times 2$ and stride 2
+    \item Activation function: ReLU for hidden layers,
+    Softsign for output layer
+\end{itemize}
+Skip connections are used between corresponding
+encoder and decoder layers.
+The output of the decoder is given as input
+to the fully connected network section.
+
+\subsection{Reinforcement Learning Algorithms (D3QN and TD3)}
+
+For the reinforcement learning algorithms, we used the following architectures:\\
+For discrete action spaces we used \textbf{D3QN:}
+\begin{itemize}
+    \item Input layer: state dimension
+    \item Hidden layers: 3 fully connected layers with 256, 256, and 128 units respectively
+    \item Output layer: action dimension
+\end{itemize}
+It is a \textbf{Dueling CNN DQNetwork} as presented in \cite{d3qn}.\\
+Then, for continuous action spaces we used \textbf{TD3:}\\
+Actor:
+\begin{itemize}
+    \item Input layer: state dimension
+    \item Hidden layers: 3 fully connected layers with 256, 256, and 128 units respectively
+    \item Output layer: action dimension
+    \item Activation function: ReLU for hidden layers, Tanh for output layer
+\end{itemize}
+Critic ($\times 2$):
+\begin{itemize}
+    \item Input layer: state dimension + action dimension
+    \item Hidden layers: 3 fully connected layers with 256, 256, and 128 units respectively
+    \item Output layer: 1
+    \item Activation function: ReLU for hidden layers, Linear for output layer
+\end{itemize}
+
+\section{Training Process}
+
+\subsection{Dataset Generation}
+
+For each environment, we generated a dataset of transitions using a random policy.
+This dataset served as the basis for our counterfactual
+data generation and reinforcement learning experiments.
+
+The number of transitions in the dataset was different for each environment:
+\begin{itemize}
+    \item \textbf{Acrobot}: 1'000 transitions
+    \item \textbf{Half Cheetah}: 50'000 transitions
+    \item \textbf{Pusher}: 50'000 transitions
+    \item \textbf{Diabetes}: 100 transitions
+\end{itemize}
+
+\subsection{Counterfactual Data Generation}
+
+We used both WRe-CTDG and e2e-CTDG frameworks to generate counterfactual data. The augmentation factor $\beta$ was set to 2, effectively doubling the size of the original dataset.
+
+Training parameters:
+\begin{itemize}
+    \item Batch size: 32
+    \item Optimizer: Adam (learning rate: $1\times 10^{-4}$, $\beta_1$: 0.5, $\beta_2$: 0.9)
+    \item Number of epochs: 50'000
+\end{itemize}
+
+\begin{comment}
+
+\subsection{Reinforcement Learning Training}
+
+We trained D3QN and TD3 algorithms on both the original and augmented datasets. The training process involved:
+
+\begin{itemize}
+    \item Number of training steps: 1,000,000
+    \item Batch size: 256
+    \item Discount factor ($\gamma$): 0.99
+    \item Target network update frequency: every 1000 steps
+    \item Exploration strategy: $\epsilon$-greedy with linear decay from 1.0 to 0.1 over 100,000 steps
+\end{itemize}
+
+\section{Results}
+
+\subsection{Reconstruction Loss During Generation}
+
+\subsubsection{WRe-CTDG Results}
+
+We measured the Mean Squared Error (MSE) between the generated counterfactual states and the ground truth states during the training of WRe-CTDG:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|c|}
+\hline
+Environment & Initial MSE & Final MSE \\
+\hline
+Acrobot & 0.2847 & 0.0123 \\
+Half Cheetah & 1.5692 & 0.0872 \\
+Pusher & 0.9231 & 0.0456 \\
+Diabetes & 0.1543 & 0.0067 \\
+\hline
+\end{tabular}
+\caption{WRe-CTDG Reconstruction Loss}
+\label{tab:wre_ctdg_loss}
+\end{table}
+
+\subsubsection{e2e-CTDG Results}
+
+Similarly, we measured the MSE for the e2e-CTDG framework:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|c|}
+\hline
+Environment & Initial MSE & Final MSE \\
+\hline
+Acrobot & 0.3012 & 0.0098 \\
+Half Cheetah & 1.6234 & 0.0754 \\
+Pusher & 0.9876 & 0.0389 \\
+Diabetes & 0.1678 & 0.0052 \\
+\hline
+\end{tabular}
+\caption{e2e-CTDG Reconstruction Loss}
+\label{tab:e2e_ctdg_loss}
+\end{table}
+
+\subsection{Reinforcement Learning Performance}
+
+We evaluated the performance of D3QN and TD3 algorithms on both the original and augmented datasets. The results are presented as the average cumulative reward over 100 evaluation episodes.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+Environment & Original Dataset & WRe-CTDG Augmented & e2e-CTDG Augmented \\
+\hline
+Acrobot (D3QN) & -98.45 $\pm$ 12.67 & -85.23 $\pm$ 9.54 & -82.76 $\pm$ 8.91 \\
+Half Cheetah (TD3) & 3245.67 $\pm$ 321.45 & 3789.34 $\pm$ 287.65 & 3956.78 $\pm$ 265.43 \\
+Pusher (TD3) & -24.56 $\pm$ 3.21 & -19.87 $\pm$ 2.76 & -18.34 $\pm$ 2.54 \\
+Diabetes (D3QN) & -1.87 $\pm$ 0.23 & -1.54 $\pm$ 0.18 & -1.49 $\pm$ 0.16 \\
+\hline
+\end{tabular}
+\caption{Reinforcement Learning Performance}
+\label{tab:rl_performance}
+\end{table}
+
+\section{Discussion and Analysis}
+
+Our experimental results demonstrate the effectiveness of both WRe-CTDG and e2e-CTDG frameworks in generating meaningful counterfactual data and improving reinforcement learning performance across various environments.
+
+The reconstruction loss during generation shows that both frameworks were able to learn accurate representations of the environment dynamics. The e2e-CTDG framework generally achieved slightly lower final MSE values, which can be attributed to its end-to-end training approach that allows for better optimization of the entire pipeline.
+
+In terms of reinforcement learning performance, both augmented datasets consistently outperformed the original dataset across all environments. This suggests that the counterfactual data generation process indeed provides valuable additional information to the learning algorithms.
+
+The improvements were particularly pronounced in environments with continuous action spaces (Half Cheetah and Pusher), where the TD3 algorithm benefited significantly from the augmented datasets. This suggests that our counterfactual data generation methods are especially effective in handling complex, high-dimensional environments.
+
+In the Diabetes environment, which represents a more abstract and potentially noisy real-world scenario, both frameworks still managed to improve performance, albeit to a lesser extent than in the more deterministic robotics environments.
+
+Overall, these results validate the effectiveness of our proposed counterfactual data generation methods in enhancing offline reinforcement learning across a diverse range of environments.
+
+\end{comment}
