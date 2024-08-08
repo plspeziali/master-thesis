@@ -49,6 +49,7 @@
 \usepackage{algorithmic}
 \usepackage{booktabs}
 \usepackage{comment}
+\usepackage[super]{nth}
 
 % -----------------------------------------------------------------
 
@@ -66,6 +67,9 @@
   \fancyhead{}
   \renewcommand{\headrulewidth}{0pt}
 }
+
+\newcommand\independent{\protect\mathpalette{\protect\independenT}{\perp}}
+\def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
 
 % Stile del codice
 \lstdefinestyle{codeStyle}{
@@ -133,12 +137,12 @@
 \lstset{aboveskip=20pt,belowskip=20pt}
 
 % Aggiunti definizioni, teoremi, linea e listing
-\newtheorem{definition}{Definizione}[section]
-\newtheorem{theorem}{Teorema}[section]
-\providecommand*\definitionautorefname{Definizione}
-\providecommand*\theoremautorefname{Teorema}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{theorem}{Theorem}[section]
+\providecommand*\definitionautorefname{Definition}
+\providecommand*\theoremautorefname{Theorem}
 \providecommand*{\listingautorefname}{Listing}
-\providecommand*\lstnumberautorefname{Linea}
+\providecommand*\lstnumberautorefname{Line}
 
 \raggedbottom
 

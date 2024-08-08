@@ -76,11 +76,46 @@ were taken in state \( s_t \). This involves the following steps:
     and the updated SCM model to predict \( s'_{t+1} \) and \( r'_{t+1} \).
 \end{enumerate}
 
+A key question in counterfactual reasoning is whether the counterfactual
+outcome is identifiable given the observed data. The following
+theorem, presented in \cite{lu2020},
+shows that under weak assumptions, the counterfactual outcome
+is indeed identifiable.
+
+\begin{theorem}
+    Suppose the state transition $S_{t+1}$ satisfies the following SCM:
+    $$S_{t+1} = f_s(S_t, A_t, U_{t+1})$$
+    where $U_{t+1} \independent (S_t, A_t)$,
+    and the function $f_s$ is smooth and strictly monotonic
+    in $U_{t+1}$ for fixed values of $S_t$ and $A_t$.
+    Suppose we have observed $\left\langle S_t = s_t, A_t = a, S_{t+1} = s_{t+1}\right\rangle $,
+    then the counterfactual outcome for the counterfactual action $A_t = a'$:
+    $$S_{t+1,\; A_t=a'} | S_t = s_t,\; A_t = a,\; S_{t+1} = s_{t+1}$$ is identifiable.
+\end{theorem}
+
+The strict monotonicity of $f$ in $U_{t+1}$ guarantees that the unobserved
+noise term $U_{t+1}$ can be recovered from the observed
+$\left\langle S_t, A_t, S_{t+1}\right\rangle $.
+With the recovered $U_{t+1}$, we can then predict the counterfactual outcome
+$S_{t+1,\; A_t=a'}$ by plugging in the new action $a'$ into the SCM.
+
+This theorem holds regardless of whether the state and action spaces are
+continuous or discrete, and it does not depend on the specific form of $f_s$
+or the distribution of $U_{t+1}$, as long as the monotonicity condition is
+satisfied.
+The key insight is that the counterfactual outcome is identifiable under
+weak assumptions, making counterfactual reasoning generally possible in
+a wide range of models and settings.
+In experiments, this strict monotonicity can be easily implemented through
+a monotonic multi-layer perceptron network
+while we will ensure that $U_{t+1}$ is, in fact, independent of $(S_t, A_t)$
+in our environments by observing their assumed SCM graph.
+
 By creating these counterfactual samples, we can form an augmented dataset
 \( \mathcal{D}' \), which can then be used to train an offline DRL agent.
 
-In practice, however, neither the Structural Causal Model (SCM),
-i.e., \( f_s \) and \( f_r \), nor the function to perform
+In practice, however, neither
+\( f_s \) and \( f_r \), nor the function to perform
 the abduction step and estimate the unobserved variable
 \( U_{t+1} \) are known. In the following, we present the framework
 we devised to infer the SCM model from the available data \( \mathcal{D} \)
@@ -123,14 +158,89 @@ a contrast to the more complex MuJoCo environments and
 allows us to test our methods on a wider range of
 control problems.
 
-In Figure \ref{fig:robotics}, we present a visual representation
-of the SCM for the robotics environments.
+In these robotics environments, we can consider
+various SCMs
+to capture the state-transition dynamics. For example:
+\begin{enumerate}
+    \item $S_{t+1} = f_s(S_t, A_t, U_{t+1})$, where $U_{t+2}$
+    is causally dependent on $U_{t+1}$, 
+    $S_{t+1}$ is causally dependent on $S_t$ and $A_t$, and
+    $A_t$ is causally dependent on $S_t$. Shown in Figure \ref{fig:scm1}.
+    \item $S_{t+1} = f_s(S_t, A_t, U_{t+1}(S_t))$, like on the
+    the first case, but the noise terms $U_{t+i}$ are independent
+    among each other. Shown in Figure \ref{fig:scm2}.
+    \item $S_{t+1} = f_s(S_t, A_t, U_{t+1}(A_t))$, like on the
+    the first case, but $S_{t+1}$ is causally dependent on both $S_{t+1}$
+    and $S_t$. Shown in Figure \ref{fig:scm3}.
+    \item $S_{t+1} = f_s(S_t, A_t, U_{t+1}(S_t, A_t))$, like on the
+    third case, but the noise terms $U_{t+i}$ are independent
+    among each other. Shown in Figure \ref{fig:scm4}.
+\end{enumerate}
+\begin{figure}
+    \begin{subfigure}[t]{.4\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/ch4/scm1.png}
+        \caption{\nth{1} SCM}
+        \label{fig:scm1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{.4\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/ch4/scm2.png}
+        \caption{\nth{2} SCM}
+        \label{fig:scm2}
+    \end{subfigure}
+    \medskip
+    \begin{subfigure}[t]{.4\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/ch4/scm3.png}
+        \caption{\nth{3} SCM}
+        \label{fig:scm3}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{.4\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/ch4/scm4.png}
+        \caption{\nth{4} SCM}
+        \label{fig:scm4}
+    \end{subfigure}
+\end{figure}
+In all these cases, we can effectively show that
+$U_{t+1} \independent (S_t, A_t)$ thanks to the rules
+of \textbf{d-separation} shown in Subsection \ref{sec:causal_models}.
+In Figure \ref{fig:scm-dep}, we present a visual representation
+of the d-separation rules for one of the SCMs considered in this work
+(these conditions hold for all the SCMs considered):
+since $S_{t-1}$, $A_{t-1}$ and $U_t$ are observed and conditioned upon
+the flow of association given by their fork structure is blocked,
+the only way for $U_t$ to influence $S_t$ could be
+through their common child $S_{t+1}$, which is unobserved,
+so the independence condition holds.
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=.6\textwidth]{figures/ch4/SCM-rob.png}
-    \caption{Structural Causal Model for the robotics environments.}
-    \label{fig:robotics}
+A case where the independence condition may not hold would be an
+SCM of the form:
+\begin{enumerate}
+    \setcounter{enumi}{4}
+    \item $S_{t+1} = f_s(S_t, A_t, U_{t+1})$,
+    where the noise term $U_{t+1}$ depends on the concurrent action
+    $A_t$. This scenario, where the action affects the noise at the same time,
+    is a rather difficult condition to achieve in the simulation
+    environments considered in this work. Shown in Figure \ref{fig:scm5}.
+\end{enumerate}
+\begin{figure}
+    \begin{subfigure}[t]{.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/ch4/scm-dep.png}
+        \caption{SCM where the independence condition does not hold.}
+        \label{fig:scm-dep}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/ch4/scm5.png}
+        \caption{\nth{5} SCM}
+        \label{fig:scm5}
+    \end{subfigure}
 \end{figure}
 
 \subsubsection{Acrobot}
@@ -318,7 +428,6 @@ and a standard deviation of $0.2$.
 
 In Figure \ref{fig:diabetes1} the SCM for the diabetes dataset
 is presented.
-
 \begin{figure}[h]
     \centering
     \includegraphics[width=.21\textwidth]{figures/ch4/diabetes1.png}
@@ -327,6 +436,16 @@ is presented.
     \caption*{\scriptsize{Source: \cite{sim2012}}}
     \label{fig:diabetes1}
 \end{figure}
+We can notice that the data generation model for $A_0$ and $A_1$
+do not incorporate $U_0$, thus $A_0 \independent U_0$ and
+$A_1 \independent U_0 | L_1$. Because of this
+the variation in $Y(a_0,a_1)$ is independent
+of all the other random variables in the model,
+making $A_0 \independent Y(a_0,a_1)$ and
+$A_1 \independent Y(a_0,a_1) | A_0, L_1$.
+Given this, the ``no unmeasured confounding'' assumption
+hold in this case.
+
 
 This dataset captures key aspects of diabetes treatment, including:
 \begin{itemize}
