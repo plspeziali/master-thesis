@@ -146,7 +146,7 @@ demand fast and accurate simulation of articulated
 structures interacting with their environment.
 
 The environments we focus on in this work are
-\textbf{HalfCheetah}, and \textbf{Pusher},
+\textbf{HalfCheetah}, \textbf{Ant}, and \textbf{Pusher},
 their wrapper can be found
 in the OpenAI Gym toolkit, as initially
 presented in \cite{brockman2016openaigym}.
@@ -204,6 +204,7 @@ to capture the state-transition dynamics. For example:
         \caption{\nth{4} SCM}
         \label{fig:scm4}
     \end{subfigure}
+    \caption{SCMs for the robotics environments.}
 \end{figure}
 In all these cases, we can effectively show that
 $U_{t+1} \independent (S_t, A_t)$ thanks to the rules
@@ -227,20 +228,21 @@ SCM of the form:
     is a rather difficult condition to achieve in the simulation
     environments considered in this work. Shown in Figure \ref{fig:scm5}.
 \end{enumerate}
-\begin{figure}
-    \begin{subfigure}[t]{.45\textwidth}
+\begin{figure}[h]
+    \begin{subfigure}[t]{.41\textwidth}
         \centering
         \includegraphics[width=\textwidth]{figures/ch4/scm-dep.png}
-        \caption{SCM where the independence condition does not hold.}
+        \caption{SCM with d-separation rules applied.}
         \label{fig:scm-dep}
     \end{subfigure}
     \hfill
-    \begin{subfigure}[t]{.45\textwidth}
+    \begin{subfigure}[t]{.41\textwidth}
         \centering
         \includegraphics[width=\textwidth]{figures/ch4/scm5.png}
         \caption{\nth{5} SCM}
         \label{fig:scm5}
     \end{subfigure}
+    \caption{SCMs and association rules.}
 \end{figure}
 
 \subsubsection{Acrobot}
@@ -329,6 +331,47 @@ or if any of the state space values is no longer finite.
     \vspace{-10px}
     \caption*{\scriptsize{Source: \cite{halfcheetahpic}}}
     \label{fig:halfcheetah}
+\end{figure}
+
+\subsubsection{Ant}
+
+The Ant environment \cite{antfarama} simulates a four-legged robot
+in a plane. A screenshot of the Ant environment
+is shown in Figure \ref{fig:ant}.\\
+\textbf{Description}: The Ant consists of a torso and four legs, each with
+two joints, resulting in a total of $8$ actuated joints.
+The goal is to coordinate the four legs to move forward (to the right)
+by applying torques to the eight hinges that connect the nine body parts,
+consisting of each leg's two segments and the torso.\\
+\textbf{State space}: The state space consist of positional values
+of different body parts of the ant, followed by the velocities
+of those individual parts (their derivatives)
+with all the positions ordered before all the velocities.\\
+\textbf{Action space}: The action space consists of $8$ continuous values
+included in $[-1, 1]$,
+corresponding to the torques applied to each one of the joints.\\
+\textbf{Reward function}: The reward is typically a combination
+of the \textbf{healthy} reward - a fixed reward for each timestep where
+the ant is alive and the \textbf{forward} reward - a reward for moving
+forward, all this minus the \textbf{ctrl} cost - a cost for applying
+for taking excessively large actions and, eventually, a \textbf{contact}
+cost - a negative reward applied if the external contact force is too large.
+The reward function is defined as:
+\begin{equation}
+    R = \textsf{healthy\_reward} + \textsf{forward\_reward} - \textsf{ctrl\_cost} \;[- \textsf{contact\_cost}]
+\end{equation}
+\textbf{Termination conditions}: The episode terminates
+if the ant falls over
+(typically defined as when the torso's z-coordinate falls below a threshold)
+or if any of the state space values is no longer finite.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.4\textwidth]{figures/ch4/ant.png}
+    \caption{Screenshot of the Ant environment.}
+    \vspace{-10px}
+    \caption*{\scriptsize{Source: \cite{antpic}}}
+    \label{fig:ant}
 \end{figure}
 
 \subsubsection{Pusher}
