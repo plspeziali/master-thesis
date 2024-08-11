@@ -65,7 +65,7 @@ Here are the details of each network:\\
     for hidden layers, Linear for output layer
 \end{itemize}
 For environments with image inputs, we additionally used a
-Convolutional AutoEncoder (CAE) architecture to
+Convolutional AutoEncoder architecture to
 encode and decode the state representations:\\
 \textbf{Convolutional Encoder:}
 \begin{itemize}
@@ -92,7 +92,7 @@ encode and decode the state representations:\\
     \item Number of filters decreases progressively:
     $$ 16\times base \rightarrow 8
     \times base \rightarrow 4\times base \rightarrow
-    2\times base \rightarrow base \rightarrow in_channels$$
+    2\times base \rightarrow base \rightarrow in\_channels$$
     with $base = 8$.
     \item Upsampling using transposed convolution
      with kernel size $2\times 2$ and stride 2
@@ -100,48 +100,78 @@ encode and decode the state representations:\\
 \end{itemize}
 The encoder and decoder are symmetric, with the number of filters changing at each level.
 
-\subsection{e2e-CTDG Network Structure}
+\subsection{S-CTDG Network Structure}
 
-The e2e-CTDG framework uses a single end-to-end network:
+The S-CTDG framework for \textbf{images} employs a network architecture
+consisting of two components: a convolutional U-Net for counterfactual
+image generation
+and a separate convolutional network with a fully connected head for
+reward prediction.\\
+\textbf{U-Net}:
+\begin{itemize}
+    \item 5 downsampling blocks and 5 upsampling blocks
+    \item Each block contains 2-3 convolutional layers
+    with BatchNorm and ReLU activation
+    \item Number of filters increases
+    progressively in downsampling:
+    $$ in\_channels \times (1 + stack\_length) + 2 \times (action\_channels)
+    \rightarrow $$$$\rightarrow base \rightarrow 2
+    \times base \rightarrow 4\times base \rightarrow
+    8\times base \rightarrow 16\times base $$
+    where the first term is the stack of current and previous images
+    concatenated along the channel dimension with the next state image
+    and the action and counterfactual action images.
+    The number of filters then decreases in upsampling:
+    $$ 16\times base \times 2 \rightarrow 8 \times base \times 2 \rightarrow
+    4\times base \times 2\rightarrow$$ $$ \rightarrow 2\times base \times 2
+    \rightarrow base \times 2 \rightarrow in\_channels$$
+    with $base = 64$, in upsampling the filters are doubled
+    since we concatenate the corresponding downsampling block.
+    \item Convolution with kernel size $3\times 3$, stride 1,
+    and padding 1
+    \item MaxPool2D with kernel size $2\times 2$ and stride
+    2 for downsampling between blocks
+    \item Final layer uses a Softsign activation function
+\end{itemize}
+\textbf{Reward Prediction Network}:
+\begin{itemize}
+    \item 5 downsampling blocks
+    \item Each block contains 2-3 convolutional layers
+    with BatchNorm and ReLU activation
+    \item Number of filters increases
+    progressively in downsampling:
+    $$ in\_channels \times (1 + stack\_length) + action\_channels
+    \rightarrow base \rightarrow$$$$\rightarrow 2
+    \times base \rightarrow 4\times base \rightarrow
+    8\times base \rightarrow 16\times base $$
+    where the first term is the stack of current and previous images
+    concatenated along the channel dimension with the
+    estimated counterfactual next state image
+    and the counterfactual action image.
+    As before, $base = 64$.
+    \item Convolution with kernel size $3\times 3$, stride 1,
+    and padding 1
+    \item MaxPool2D with kernel size $2\times 2$ and stride
+    2 for downsampling between blocks
+    \item Final layer uses an Identity activation function
+\end{itemize}
+
+The S-CTDG framework for \textbf{numerical} data
+employs a network architecture consisting of a single
+fully connected network branched into two heads:
+one for counterfactual data generation
+and one for reward prediction.
+The network architecture is as follows:
 \begin{itemize}
     \item Input layer: 2 $\times$ numerical state dimensions
-    + 2 $\times$ latent state dimensions + action dimension
-    + counterfactual action dimension
-    \item Hidden Layer: 3 fully connected layers with
-    1536 units each
-    \item Output layer: counterfactual state dimension
-    + 1 (for reward prediction)
-    \item Activation function: ReLU for hidden layers,
-    Tanh/Sigmoid/Identity for reward output
+    $ + $ $2 \times $ action dimension
+    \item Hidden layers: 7 fully connected layers with
+    512, 512, 512 and 256 units respectively
+    \item Output layer for counterfactual data generation:
+    numerical state dimension, Linear activation function
+    \item Output layer for reward prediction: 1,
+    Identity activation function
 \end{itemize}
-For environments with image inputs:\\
-\textbf{Convolutional Encoder:}
-\begin{itemize}
-    \item RGB or grayscale images as input
-    \item 4 convolutional layers with 96, 192,
-    384, and 768 filters respectively
-    \item Kernel size: $3 \times 3$, 
-    stride: 1, padding: 1
-    \item MaxPool2D with kernel size $2 \times 2$ and
-    stride 2 in between layers
-    \item Activation function: ReLU
-\end{itemize}
-\textbf{Convolutional Decoder:}
-\begin{itemize}
-    \item Output of the fully connected network as input
-    \item 4 convolutional layers with 768, 384,
-    192, and 96 filters respectively
-    \item Kernel size: $3 \times 3$, stride: 2, padding: 1,
-    output padding: 1
-    \item Upsampling using transposed convolution
-    with kernel size $2\times 2$ and stride 2
-    \item Activation function: ReLU for hidden layers,
-    Softsign for output layer
-\end{itemize}
-Skip connections are used between corresponding
-encoder and decoder layers.
-The output of the decoder is given as input
-to the fully connected network section.
 
 \subsection{Reinforcement Learning Algorithms (D3QN and TD3)}
 
@@ -149,7 +179,8 @@ For the reinforcement learning algorithms, we used the following architectures:\
 For discrete action spaces we used \textbf{D3QN:}
 \begin{itemize}
     \item Input layer: state dimension
-    \item Hidden layers: 3 fully connected layers with 256, 256, and 128 units respectively
+    \item Hidden layers: 4 fully connected layers with 32, 64, 128 and 128
+    units respectively
     \item Output layer: action dimension
 \end{itemize}
 It is a \textbf{Dueling CNN DQNetwork} as presented in \cite{d3qn}.\\
@@ -157,17 +188,21 @@ Then, for continuous action spaces we used \textbf{TD3:}\\
 Actor:
 \begin{itemize}
     \item Input layer: state dimension
-    \item Hidden layers: 3 fully connected layers with 256, 256, and 128 units respectively
+    \item Hidden layers: 3 fully connected layers with 32, 64, 128 and 128
+    units respectively
     \item Output layer: action dimension
     \item Activation function: ReLU for hidden layers, Tanh for output layer
 \end{itemize}
-Critic ($\times 2$):
+Critic:
 \begin{itemize}
     \item Input layer: state dimension + action dimension
-    \item Hidden layers: 3 fully connected layers with 256, 256, and 128 units respectively
+    \item Hidden layers: 3 fully connected layers with 32, 64, 128 and 128
+    units respectively
     \item Output layer: 1
     \item Activation function: ReLU for hidden layers, Linear for output layer
 \end{itemize}
+The actor and critic networks are modelled after
+the architectures presented in \cite{lillicrap2019}. 
 
 \section{Training Process Details}
 
@@ -179,7 +214,7 @@ data generation and reinforcement learning experiments.
 
 The number of transitions in the dataset was different for each environment:
 \begin{itemize}
-    \item \textbf{Acrobot}: 1'000 transitions
+    \item \textbf{Acrobot}: 20'000 transitions
     \item \textbf{Half Cheetah}: 50'000 transitions
     \item \textbf{Ant}: 50'000 transitions
     \item \textbf{Pusher}: 50'000 transitions
@@ -188,13 +223,13 @@ The number of transitions in the dataset was different for each environment:
 
 \subsection{Counterfactual Data Generation}
 
-We used both WRe-CTDG and e2e-CTDG frameworks to generate counterfactual data. The augmentation factor $\beta$ was set to 2, effectively doubling the size of the original dataset.
+We used both WRe-CTDG and S-CTDG frameworks to generate counterfactual data. The augmentation factor $\beta$ was set to 2, effectively doubling the size of the original dataset.
 
 Training parameters:
 \begin{itemize}
     \item Batch size: 32
     \item Optimizer: Adam (learning rate: $1\times 10^{-4}$, $\beta_1$: 0.5, $\beta_2$: 0.9)
-    \item Number of epochs: 50'000
+    \item Number of epochs: 100'000
 \end{itemize}
 
 \begin{comment}

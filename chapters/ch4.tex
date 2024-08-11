@@ -122,7 +122,7 @@ we devised to infer the SCM model from the available data \( \mathcal{D} \)
 and simultaneously learn a function to estimate
 \( U_{t+1} \) (see Subsection \ref{sec:wre}). Additionally, we investigated
 a method where the noise is known and counterfactual states are collected
-(see Subsection \ref{sec:e2e}).
+(see Subsection \ref{sec:sctdg}).
 This approach shifts the problem towards developing the most accurate and
 representative simulator.
 
@@ -797,8 +797,8 @@ algorithm, such as D3QN or TD3.
     \vspace{2pt}
 \end{algorithm}
 
-\subsection{End-to-End CounTerfactual Data Generation}
-\label{sec:e2e}
+\subsection{Supervised CounTerfactual Data Generation}
+\label{sec:sctdg}
 
 The second approach assumes that the noise in the system is known
 in the training phase and focuses on directly collecting
@@ -814,42 +814,54 @@ precise simulation of the environment.
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{figures/ch4/2.e2e.png}
-    \caption{e2e-CTDG framework in a situation where the states are
+    \includegraphics[width=\textwidth]{figures/ch4/2.sctdg.png}
+    \caption{S-CTDG framework in a situation where the states are
     images only.}
-    \label{fig:e2e}
+    \label{fig:sctdg}
 \end{figure}
 
 \subsubsection{Counterfactual Data Generation}
 
-The proposed strategy involves the employment of a Neural Network
-architecture, using two additional Convolutional Neural Networks
-for the tasks of downsampling and upsampling images,
-the upsampling layers are connected to the downsampling layers
-using the skip connection mechanism to improve the quality of the
-upsampled images.
+The current architecture of our network is designed to process unimodal data,
+specifically either image-based or numerical inputs.
+While the framework possesses the potential for extension
+to multimodal environments, the present implementation focuses
+on these two distinct data types.
 
-The inner neural network is designed to take as input the last state at
-time $t$ ($\mathcal{S}_{t}$), the last state at time $t+1$
-($\mathcal{S}_{t+1}$), the action $a$ at time $t$,
-and a counterfactual action $A_t \neq A_{t,\, CF}$.
-In the case of states composed by images only,
-the input of the neural network is $\mathcal{I}_{t}$ and $\mathcal{I}_{t+1}$
-downsampled and flattened for usage in the fully connected layers.
-In the case of states composed by numerical data only,
-the input of the neural network is $\mathcal{X}_{t}$ and $\mathcal{X}_{t+1}$
-and the CNN layers are not used.
-Finally, if the states are composed by a combination of images
-and numerical data,
-the input of the neural network is $\mathcal{X}_{t}$, $\mathcal{X}_{t+1}$ and
-the downsampled and flattened images $\mathcal{I}_{t}$ and $\mathcal{I}_{t+1}$.
+For \textbf{numerical data} processing, the network employs a fully connected MLP.
+This network accepts as input the concatenation of the current state
+$\mathcal{X}_{t}$, the subsequent state $\mathcal{X}_{t+1}$,
+the action taken $A_t$, and the counterfactual action $A_{t,\, CF} \neq A_t$.
+The network then produces as output the estimated counterfactual next state
+$\hat{\mathcal{X}}_{t+1,\; CF}$ and the corresponding counterfactual
+reward $\hat{R}_{t+1,\; CF}$.
 
-The output of the neural network is the counterfactual state
-$\hat{\mathcal{S}}_{t+1,\, CF}$ and the counterfactual reward
-$\hat{R}_{t+1,\, CF}$.
-If the states contain images, the output of the neural network
-is passed to the upsampling CNN layers to generate the counterfactual
-image $\hat{\mathcal{I}}_{t+1,\, CF}$.
+For \textbf{image-based} inputs, we implement a CNN
+architecture with symmetric downsampling and upsampling paths,
+interconnected via skip connections. This structure is reminiscent
+of \textbf{U-Net} introduced in \cite{ronneberger2015u},
+facilitating the preservation of
+spatial information.
+The network's input comprises the current state image $\mathcal{I}_{t}$,
+the subsequent state image $\mathcal{I}_{t+1}$,
+and image representations of both the actual action $A_t$
+and the counterfactual action $A_{t,\, CF} \neq A_t$. The action-to-image
+conversion process is contingent on the nature of the action space:
+\begin{itemize}
+    \item For \textbf{discrete}, one-hot encoded action spaces (e.g. Acrobot),
+    each action is represented as a single-channel image where all
+    pixels hold the same value derived from the encoding vector.
+    \item For \textbf{continuous} action spaces (e.g. Half Cheetah), 
+    each action vector is transformed into a multi-channel image,
+    where the $i$-th channel is a uniform grid populated with the
+    $i$-th component of the action vector.
+\end{itemize}
+The network produces the counterfactual next state image
+$\hat{\mathcal{I}}_{t+1,\; CF}$, which
+is then processed, along with the current state image
+$\mathcal{I}_{t}$ and the image representation of the counterfactual
+action $\mathcal{A}_{t,\, CF}$, by a subsequent, more compact CNN.
+This secondary network estimates the counterfactual reward $\hat{R}_{t+1,\; CF}$.
 
 The loss function used to train the neural network is composed of
 two terms: the Mean Squared Error (MSE) between the predicted
@@ -860,8 +872,10 @@ counterfactual reward:
     \mathcal{L} = \mathbb{E} \left[ \left( \hat{\mathcal{S}}_{t+1,\, CF} - \mathcal{S}_{t+1,\, CF} \right)^2 \right] +
     \mathbb{E} \left[ \left( \hat{R}_{t+1,\, CF} - R_{t+1,\, CF} \right)^2 \right]
 \end{equation}
+where $\mathcal{S}$ represents the state as either a numerical vector
+or an image.
 
-The e2e-CTDG model takes as input the current state $s_t$,
+The S-CTDG model takes as input the current state $s_t$,
 the next state $s_{t+1}$, the original action $a_t$,
 and the counterfactual action $a_t'$. It then produces a counterfactual
 next state $\hat{s}_{t+1}'$ and a counterfactual reward $\hat{r}_{t+1}'$.
@@ -872,7 +886,7 @@ had been taken.
 
 \subsubsection{Experience Generation through Counterfactual Augmentation}
 
-After understanding the end-to-end causal mechanism of the e2e-CTDG model,
+After understanding the end-to-end causal mechanism of the S-CTDG model,
 we can utilize it for counterfactual data augmentation.
 The original dataset $\mathcal{D}$ is expanded by a factor of $\beta$
 according to the method described in Algorithm \ref{alg2}.
@@ -880,7 +894,7 @@ For each sampled tuple
 $T = (s_t, s_{t+1}, a_t) \in \mathcal{D}$,
 the process is simplified compared to the WRe-CTDG method.
 Instead of separate encoding and generation steps,
-the e2e-CTDG model $G_{e2e}$ directly generates the counterfactual
+the S-CTDG model $G_{sup}$ directly generates the counterfactual
 state $\hat{s}_{t+1}'$ and reward $\hat{r}_{t+1}'$
 given the current state $s_t$, next state $s_{t+1}$,
 current action $a_t$, and a randomly chosen counterfactual action $a'_t$.
@@ -892,11 +906,11 @@ train any off-policy DRL algorithm, such as D3QN or TD3.
 
 \begin{algorithm}[hb]
     \small
-    \caption{e2e-CTDG Counterfactual Augmentation} \label{alg2}
+    \caption{S-CTDG Counterfactual Augmentation} \label{alg2}
     
     \vspace{1pt}
-    \KwIn{dataset $\mathcal{D}$, augmentation factor $\beta > 1$, $G_{e2e}$
-    e2e-CTDG}
+    \KwIn{dataset $\mathcal{D}$, augmentation factor $\beta > 1$, $G_{sup}$
+    S-CTDG}
     \KwOut{augmented dataset $\mathcal{D}'$}
     
     
@@ -910,7 +924,7 @@ train any off-policy DRL algorithm, such as D3QN or TD3.
             
             \ForEach{$ T = (s_t, s_{t+1}, a_t) \in B$}{
                 \textit{Action}: $a'_t \gets \text{choose random action} \neq a_t $ \\
-                \textit{Prediction}: $(\hat{s}'_{t+1}, \hat{r}'_{t+1}) \gets G_{e2e} (s_t, s_{t+1}, a_t, a'_{t})$ \\
+                \textit{Prediction}: $(\hat{s}'_{t+1}, \hat{r}'_{t+1}) \gets G_{sup} (s_t, s_{t+1}, a_t, a'_{t})$ \\
                 Insert $T' = (s_t, \hat{s}'_{t+1}, a'_t, \hat{r}_{t+1}')$ in $B'$ \\
             }
     
