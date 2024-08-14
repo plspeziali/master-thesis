@@ -23,7 +23,8 @@ accuracy and utility in practical applications.
 Moreover, even when substantial datasets are available, they
 often suffer from \textbf{noise and inconsistencies}. Real-world data
 collection processes are rarely perfect, resulting in datasets
-that may contain errors, outliers, or biased samples.
+that may contain outliers or biased samples, also due to unmeasured
+variables and confounding factors.
 These imperfections can significantly impact the performance of ML models,
 leading to unreliable predictions or decisions. The challenge of dealing
 with noisy datasets is particularly acute in offline
@@ -60,12 +61,9 @@ high-fidelity experiences that align with the environment's underlying
 transition dynamics.
 
 Our work focuses specifically on offline DRL scenarios, where agents
-are trained using pre-collected datasets of experiences.
-We explore applications in both robotics environments
-(such as Acrobot, Half Cheetah, and Pusher) and healthcare scenarios
-(such as diabetes treatment simulation).
-These domains present unique challenges due to their complex
-dynamics and the potential consequences of incorrect decisions.
+are trained using pre-collected datasets of experiences,
+and we are going to explore applications in both robotics environments
+and healthcare scenarios.
 
 By incorporating \textbf{Structural Causal Models} (SCMs) and
 \textbf{Generative Adversarial Networks} (GANs) into our frameworks,
@@ -93,8 +91,9 @@ The following chapters are organized as follows:
     and the S-CTDG frameworks,
     detailing their architectures and training procedures.
     We also present the environments and datasets used for evaluation.
-    \item In \textbf{Chapter 5}, we present a comprehensive description
-    of the machines and neural networks employed in our experiments,
+    \item In \textbf{Chapter 5}, we present a description
+    of the machines specifications
+    and of the details of the neural networks employed in our experiments,
     followed by a detailed overview of the experimental results.
     \item In \textbf{Chapter 6}, we discuss the implications of our findings,
     the limitations of our approaches,

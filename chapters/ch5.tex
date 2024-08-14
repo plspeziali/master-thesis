@@ -214,36 +214,39 @@ data generation and reinforcement learning experiments.
 
 The number of transitions in the dataset was different for each environment:
 \begin{itemize}
-    \item \textbf{Acrobot}: 20'000 transitions
-    \item \textbf{Half Cheetah}: 50'000 transitions
-    \item \textbf{Ant}: 50'000 transitions
-    \item \textbf{Pusher}: 50'000 transitions
-    \item \textbf{Diabetes}: 100 transitions
+    \item \textbf{Acrobot}: 20'000 transitions, observation stack length: 2
+    \item \textbf{Half Cheetah}: 50'000 transitions, observation stack length: 4
+    \item \textbf{Ant}: 50'000 transitions, observation stack length: 4
+    \item \textbf{Diabetes}: 100 transitions, observation stack length: 1
 \end{itemize}
 
 \subsection{Counterfactual Data Generation}
 
-We used both WRe-CTDG and S-CTDG frameworks to generate counterfactual data. The augmentation factor $\beta$ was set to 2, effectively doubling the size of the original dataset.
+We used both WRe-CTDG and S-CTDG frameworks to generate counterfactual data.
+The augmentation factor $\alpha$ was set to 4, effectively quadrupling
+the size of the original datasets.
 
 Training parameters:
 \begin{itemize}
     \item Batch size: 32
     \item Optimizer: Adam (learning rate: $1\times 10^{-4}$, $\beta_1$: 0.5, $\beta_2$: 0.9)
-    \item Number of epochs: 100'000
+    \item Number of iterations: 10'000 for WRe-CTDG, 50'000 for S-CTDG
+    \item Frame size for image-based environments: $128\times 128$
 \end{itemize}
 
-\begin{comment}
+
 
 \subsection{Reinforcement Learning Training}
 
-We trained D3QN and TD3 algorithms on both the original and augmented datasets. The training process involved:
+We trained D3QN and TD3 algorithms on both the original and augmented datasets.
+The training process involved:
 
 \begin{itemize}
-    \item Number of training steps: 1,000,000
+    \item Number of training steps: 2,000
     \item Batch size: 256
     \item Discount factor ($\gamma$): 0.99
-    \item Target network update frequency: every 1000 steps
-    \item Exploration strategy: $\epsilon$-greedy with linear decay from 1.0 to 0.1 over 100,000 steps
+    \item Optimizer: Adam (learning rate: $1\times 10^{-4}$, $\beta_1$: 0.0, $\beta_2$: 0.9)
+    \item Exploration strategy: $\epsilon$-greedy with decay factor $\tau = 0.005$
 \end{itemize}
 
 \section{Results}
@@ -252,76 +255,103 @@ We trained D3QN and TD3 algorithms on both the original and augmented datasets. 
 
 \subsubsection{WRe-CTDG Results}
 
-We measured the Mean Squared Error (MSE) between the generated counterfactual states and the ground truth states during the training of WRe-CTDG:
+We measured the Mean Absolute Error (MAE)
+between the generated counterfactual states and the ground truth
+states during the training of WRe-CTDG:
 
 \begin{table}[h]
 \centering
 \begin{tabular}{|l|c|c|}
 \hline
-Environment & Initial MSE & Final MSE \\
+Environment & Training MAE & Validation MAE \\
 \hline
-Acrobot & 0.2847 & 0.0123 \\
-Half Cheetah & 1.5692 & 0.0872 \\
-Pusher & 0.9231 & 0.0456 \\
-Diabetes & 0.1543 & 0.0067 \\
+Acrobot & 0. & 0. \\
+Half Cheetah & 0. & 0. \\
+Ant & 0. & 0. \\
+Diabetes & 0. & 0. \\
 \hline
 \end{tabular}
 \caption{WRe-CTDG Reconstruction Loss}
 \label{tab:wre_ctdg_loss}
 \end{table}
 
-\subsubsection{e2e-CTDG Results}
+\subsubsection{S-CTDG Results}
 
-Similarly, we measured the MSE for the e2e-CTDG framework:
+Similarly, we measured the MAE for the S-CTDG framework:
 
 \begin{table}[h]
 \centering
 \begin{tabular}{|l|c|c|}
 \hline
-Environment & Initial MSE & Final MSE \\
+Environment & Training MAE & Validation MAE \\
 \hline
-Acrobot & 0.3012 & 0.0098 \\
-Half Cheetah & 1.6234 & 0.0754 \\
-Pusher & 0.9876 & 0.0389 \\
-Diabetes & 0.1678 & 0.0052 \\
+Acrobot & 0. & 0. \\
+Half Cheetah & 0. & 0. \\
+Ant & 0. & 0. \\
+Diabetes & 0. & 0. \\
 \hline
 \end{tabular}
-\caption{e2e-CTDG Reconstruction Loss}
-\label{tab:e2e_ctdg_loss}
+\caption{S-CTDG Reconstruction Loss}
+\label{tab:s}
 \end{table}
+
+
 
 \subsection{Reinforcement Learning Performance}
 
-We evaluated the performance of D3QN and TD3 algorithms on both the original and augmented datasets. The results are presented as the average cumulative reward over 100 evaluation episodes.
+We evaluated the performance of D3QN and TD3 algorithms on both the
+original and augmented datasets. The results are presented
+in \ref{tab:rl_reward} for reward trends and \ref{tab:rl_loss}
+for loss trends. The reward value shown is the best reward
+over all the evaluation episodes.
 
 \begin{table}[h]
-\centering
-\begin{tabular}{|l|c|c|c|}
-\hline
-Environment & Original Dataset & WRe-CTDG Augmented & e2e-CTDG Augmented \\
-\hline
-Acrobot (D3QN) & -98.45 $\pm$ 12.67 & -85.23 $\pm$ 9.54 & -82.76 $\pm$ 8.91 \\
-Half Cheetah (TD3) & 3245.67 $\pm$ 321.45 & 3789.34 $\pm$ 287.65 & 3956.78 $\pm$ 265.43 \\
-Pusher (TD3) & -24.56 $\pm$ 3.21 & -19.87 $\pm$ 2.76 & -18.34 $\pm$ 2.54 \\
-Diabetes (D3QN) & -1.87 $\pm$ 0.23 & -1.54 $\pm$ 0.18 & -1.49 $\pm$ 0.16 \\
-\hline
-\end{tabular}
-\caption{Reinforcement Learning Performance}
-\label{tab:rl_performance}
+    \centering
+    \begin{tabular}{|l|c|c|c|}
+    \hline
+    Environment & Original Dataset & WRe-CTDG Aug. & S-CTDG Aug. \\
+    \hline
+    Acrobot (D3QN) & -59.85 & -57.13 & -53.61 \\
+    Half Cheetah (TD3) & -0. & -0. & -0. \\
+    Ant (TD3) & -0. & -0. & -0. \\
+    Diabetes (D3QN) & -0. & -0. & -0. \\
+    \hline
+    \end{tabular}
+    \caption{Reinforcement Learning Final Reward}
+    \label{tab:rl_reward}
 \end{table}
 
-\section{Discussion and Analysis}
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|c|c|c|}
+    \hline
+    Environment & Original Dataset & WRe-CTDG Aug. & S-CTDG Aug. \\
+    \hline
+    Acrobot (D3QN) & -0. & -0. & -0. \\
+    Half Cheetah (TD3) & -0. & -0. & -0. \\
+    Ant (TD3) & -0. & -0. & -0. \\
+    Diabetes (D3QN) & -0. & -0. & -0. \\
+    \hline
+    \end{tabular}
+    \caption{Reinforcement Learning Final Loss}
+    \label{tab:rl_loss}
+\end{table}
 
-Our experimental results demonstrate the effectiveness of both WRe-CTDG and e2e-CTDG frameworks in generating meaningful counterfactual data and improving reinforcement learning performance across various environments.
+In Figure \ref{fig:rew_acrobot} we show the reward trends for the
+Acrobot environment using D3QN, while in Figure \ref{fig:loss_acrobot}
+we show the loss trends for the same environment.
 
-The reconstruction loss during generation shows that both frameworks were able to learn accurate representations of the environment dynamics. The e2e-CTDG framework generally achieved slightly lower final MSE values, which can be attributed to its end-to-end training approach that allows for better optimization of the entire pipeline.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.8\textwidth]{figures/ch5/rew_acrobot.png}
+    \caption{Acrobot Reward Trends}
+    \label{fig:rew_acrobot}
+\end{figure}
 
-In terms of reinforcement learning performance, both augmented datasets consistently outperformed the original dataset across all environments. This suggests that the counterfactual data generation process indeed provides valuable additional information to the learning algorithms.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.8\textwidth]{figures/ch5/loss_acrobot.png}
+    \caption{Acrobot Loss Trends}
+    \label{fig:loss_acrobot}
+\end{figure}
 
-The improvements were particularly pronounced in environments with continuous action spaces (Half Cheetah and Pusher), where the TD3 algorithm benefited significantly from the augmented datasets. This suggests that our counterfactual data generation methods are especially effective in handling complex, high-dimensional environments.
-
-In the Diabetes environment, which represents a more abstract and potentially noisy real-world scenario, both frameworks still managed to improve performance, albeit to a lesser extent than in the more deterministic robotics environments.
-
-Overall, these results validate the effectiveness of our proposed counterfactual data generation methods in enhancing offline reinforcement learning across a diverse range of environments.
-
-\end{comment}

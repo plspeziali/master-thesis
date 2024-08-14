@@ -1,6 +1,6 @@
 \section{Offline RL: Advancements and Challenges}
 
-\textbf{Offline Reinforcement Learning} (RL)
+\textbf{Offline Reinforcement Learning} (Offline RL)
 has emerged as a promising approach for training control
 policies using pre-collected experiences,
 eliminating the need for potentially dangerous or
@@ -10,7 +10,8 @@ its practical application, particularly in control
 and robotics domains.
 
 Research efforts to enhance Offline RL performance are
-primarily advancing along two paths.
+primarily advancing along two paths that we
+are now going to explore.
 
 \subsection{Improving Robustness and Sample Efficiency}
 
@@ -106,8 +107,18 @@ data for RL optimization.
 
 In the \textbf{offline} RL setting, \cite{han2022}
 introduce a selective data augmentation technique
-using a Variational Autoencoder (VAE).
-The method targets sparse subspaces in the dataset,
+using a Variational Autoencoder.
+
+A \textbf{Variational Autoencoder} (VAE),
+defined in \cite{kingma2013},
+is an unsupervised learning architecture
+that learns a low-dimensional latent space
+representation of the input data
+by encoding and decoding it through
+two separate neural networks.
+\label{sec:vae}
+
+The method of \cite{han2022} targets sparse subspaces in the dataset,
 representing them in the VAE's latent space,
 then sampling and decoding new data points to augment
 underrepresented regions. This approach aims to generate
@@ -188,15 +199,6 @@ quickly in an unsupervised manner to learn a
 compressed spatial and temporal representation
 of the environment.
 
-A Variational Autoencoder (VAE),
-defined in \cite{kingma2013},
-is an unsupervised learning architecture
-that learns a low-dimensional latent space
-representation of the input data
-by encoding and decoding it through
-two separate neural networks.
-\label{sec:vae}
-
 Despite not being explicitly designed for data augmentation,
 World Models and VAEs
 can be naturally used to achieve the same objective.
@@ -213,7 +215,7 @@ latent space, efficiently optimizing behavior
 by propagating analytic gradients of learned
 state values through imagined trajectories.
 
-A similar approach was proposed in \cite{andersen2018}
+A similar approach was proposed in \cite{andersen2018},
 where the \textbf{Dreaming Variational Autoencoder} (DVAE)
 architecture is presented.
 The DVAE combines variational autoencoders
@@ -298,7 +300,7 @@ Bidirectional Conditional Generative Adversarial Network
 (BiCoGAN) architecture (which is discussed in more detail
 in Section \ref{sec:bicogan}), the model
 can be seen in Figure \ref{fig:rlcf}.
-The authors use structural causal models (SCMs)
+The authors use SCMs
 to model state dynamics, leveraging both
 commonalities and differences across subjects,
 and allowing to estimate unmeasured variables,
@@ -323,8 +325,8 @@ counterpart achieves better performance on the first one.
 
 However, this approach is designed for non-visual,
 low-dimensional inputs, and discrete control
-actions. Additionally, a significant drawback of this algo-
-rithm is its lack of a mechanism for estimating the reward
+actions. Additionally, a significant drawback of this algorithm
+is its lack of a mechanism for estimating the reward
 associated with the generated states. This limitation implies
 that retrieving the reward is possible only when the reward
 function can be directly calculated from the generated states,

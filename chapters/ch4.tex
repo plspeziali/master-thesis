@@ -146,7 +146,7 @@ demand fast and accurate simulation of articulated
 structures interacting with their environment.
 
 The environments we focus on in this work are
-\textbf{HalfCheetah}, \textbf{Ant}, and \textbf{Pusher},
+\textbf{HalfCheetah} and \textbf{Ant},
 their wrapper can be found
 in the OpenAI Gym toolkit, as initially
 presented in \cite{brockman2016openaigym}.
@@ -166,13 +166,13 @@ to capture the state-transition dynamics. For example:
     is causally dependent on $U_{t+1}$, 
     $S_{t+1}$ is causally dependent on $S_t$ and $A_t$, and
     $A_t$ is causally dependent on $S_t$. Shown in Figure \ref{fig:scm1}.
-    \item $S_{t+1} = f_s(S_t, A_t, U_{t+1}(S_t))$, like on the
+    \item $S_{t+1} = f_s(S_t, A_t, U_{t+1})$, like on the
     the first case, but the noise terms $U_{t+i}$ are independent
     among each other. Shown in Figure \ref{fig:scm2}.
-    \item $S_{t+1} = f_s(S_t, A_t, U_{t+1}(A_t))$, like on the
+    \item $S_{t+1} = f_s(S_t, A_t, U_{t+1})$, like on the
     the first case, but $S_{t+1}$ is causally dependent on both $S_{t+1}$
     and $S_t$. Shown in Figure \ref{fig:scm3}.
-    \item $S_{t+1} = f_s(S_t, A_t, U_{t+1}(S_t, A_t))$, like on the
+    \item $S_{t+1} = f_s(S_t, A_t, U_{t+1})$, like on the
     third case, but the noise terms $U_{t+i}$ are independent
     among each other. Shown in Figure \ref{fig:scm4}.
 \end{enumerate}
@@ -374,6 +374,8 @@ or if any of the state space values is no longer finite.
     \label{fig:ant}
 \end{figure}
 
+\begin{comment}
+
 \subsubsection{Pusher}
 
 The Pusher environment \cite{pusherfarama} simulates
@@ -418,6 +420,8 @@ or when any of the state space values is no longer finite.
     \caption*{\scriptsize{Source: \cite{pusherpic}}}
     \label{fig:pusher}
 \end{figure}
+
+\end{comment}
 
 \subsection{Healthcare Environments}
 
