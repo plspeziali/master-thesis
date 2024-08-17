@@ -147,16 +147,16 @@ structures interacting with their environment.
 
 The environments we focus on in this work are
 \textbf{HalfCheetah} and \textbf{Ant},
-their wrapper can be found
-in the OpenAI Gym toolkit, as initially
-presented in \cite{brockman2016openaigym}.
+their wrapper can be found, as initially
+presented in \cite{brockman2016openaigym},
+in the OpenAI Gym toolkit.
 In addition to these, we also include \textbf{Acrobot},
 a classic control problem also available in the OpenAI Gym
 toolkit and based on the work of \cite{sutton1998}.
 Its inclusion provides
 a contrast to the more complex MuJoCo environments and
 allows us to test our methods on a wider range of
-control problems.
+control problems.piop
 
 In these robotics environments, we can consider
 various SCMs
@@ -288,8 +288,8 @@ of timesteps (500) is reached.
 \subsubsection{Half Cheetah}
 
 The Half Cheetah environment \cite{halfcheetahfarama} 
-simulates a 2-dimensional robot with two paws.
-A screenshot of the Half Cheetah environment is shown
+simulates a 2-dimensional robot with two paws,
+a screenshot of said environment is shown
 in Figure \ref{fig:halfcheetah}.\\
 \textbf{Description}: The Half Cheetah is a 2-dimensional robot
 composed of 9 body segments connected by 8 joints, including two paws
@@ -493,6 +493,8 @@ $A_1 \independent Y(a_0,a_1) | A_0, L_1$.
 Given this, the ``no unmeasured confounding'' assumption
 hold in this case.
 
+The return value given to the RL agent in this environment
+is the negative value of \( Y \) at the end of the simulation.
 
 This dataset captures key aspects of diabetes treatment, including:
 \begin{itemize}

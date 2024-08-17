@@ -14,14 +14,14 @@ This leads to problems such as the \textbf{curse of dimensionality},
 where the number of possible interactions between variables grows exponentially
 with the number of input variables.
 To address large-scale problems, it is essential to adapt the basis functions
-to the data, as demonstrated by support vector machines (SVMs).
+to the data, as demonstrated by Support Vector Machines (SVMs).
 Alternatively, one can fix the number of basis functions in advance while
 allowing them to be adaptive, utilizing parametric forms for the basis
 functions with parameter values adjusted during training.
 
 The most successful example of this approach in pattern recognition is the
 \textbf{feed-forward neural network},
-also known as the multilayer perceptron (MLP).
+also known as the \textbf{MultiLayer Perceptron} (MLP).
 \begin{figure}[h]
     \centering
     \includegraphics[width=.75\textwidth]{figures/ch3/1.mlp.png}
@@ -44,9 +44,9 @@ These models are called \textbf{feedforward} because information
 flows unidirectionally from the input \( x \), through intermediate computations
 defining \( f \), and ultimately to the output \( y \), without feedback loops.
 
-The training data directly specifies the output layer's behavior but
+The training data directly specifies the behavior of the output layer but
 not the intermediate layers, which are called \textbf{hidden layers}
-because their desired outputs are not provided by the training data.
+since their desired outputs are not provided by the training data.
 The learning algorithm must determine how to best utilize these
 hidden layers to approximate \( f^* \).
 Every layer of the network computes a non-linear transformation of the
@@ -60,7 +60,7 @@ In order to train the network and update the weights, MLPs use the
 \textbf{backpropagation} technique, which computes the gradient of the
 loss function with respect to the weights of the network.
 The weights are then updated using an optimization algorithm such as
-\textbf{stochastic gradient descent} (SGD)
+\textbf{Stochastic Gradient Descent} (SGD)
 or one of its adaptive variants like \textbf{Adam},
 whose hyperparameters are tuned according to the task during training.
 
@@ -107,7 +107,7 @@ to \emph{learn} it.
 \subsection{Convolutional Neural Networks}
 \label{sec:cnn}
 
-Convolutional Neural Networks (CNNs) are a specialized type of neural network
+\textbf{Convolutional Neural Networks} (CNNs) are a specialized type of neural network
 for processing data that has a known, grid-like topology,
 it is particularly effective for image recognition tasks.
 
@@ -448,6 +448,7 @@ for representing and training agents:
     and its variants such as Double DQN (\textbf{DDQN})
     \cite{ddqn} and
     Dueling Double DQN (\textbf{D3QN}) \cite{d3qn}.
+    This family of algorithms is used in tasks with discrete action spaces.
 
 \end{itemize}
 
@@ -458,6 +459,7 @@ In this spectrum of algorithms we can find
 an \textbf{actor} that makes actions and a \textbf{critic} that evaluates them.
 An example of an actor-critic algorithm is Twin-Delayed DDPG (\textbf{TD3})
 \cite{td3}.
+These methods are used in tasks with continuous action spaces.
 
 If samples are collected during training the reinforcement learning is
 considered \textbf{online}, otherwise,
