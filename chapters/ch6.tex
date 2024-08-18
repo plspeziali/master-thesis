@@ -1,0 +1,95 @@
+\section{Summary of Findings}
+
+This thesis has explored novel approaches to address the challenges
+of data scarcity and noisy datasets in machine learning, with a specific
+focus on offline deep reinforcement learning scenarios.
+We introduced two frameworks for counterfactual data generation:
+the Wasserstein Reward-enhanced CounTerfactual Data Generation (WRe-CTDG)
+and the Supervised CounTerfactual Data Generation (S-CTDG).
+
+Our experimental results demonstrated the efficacy of these
+frameworks across various environments and highlight the potential
+of counterfactual data generation in enhancing the performance of
+offline reinforcement learning algorithms
+in across diverse tasks and systems.
+
+\section{Implications and Contributions}
+
+The findings of this research have several important implications:
+\begin{itemize}
+    \item \textbf{Improved Data Utilization}: Our frameworks demonstrate
+    that it's possible to extract more value from existing datasets
+    through sophisticated augmentation techniques, potentially 
+    reducing the need for extensive data collection.
+    \item \textbf{Enhanced Model Performance}: The significant improvements
+    in reward values, especially in complex environments
+    like Half Cheetah and Ant, suggest that our methods can lead
+    to more robust and effective reinforcement learning models.
+    \item \textbf{Bridging Causal Inference and Machine Learning}:
+    By incorporating Structural Causal Models and
+    Generative Adversarial Networks, our work contributes to the
+    growing field of causal machine learning, offering new ways to
+    leverage causal relationships in data augmentation.
+    \item \textbf{Applicability to Diverse Domains}: The effectiveness of
+    our methods across both robotic simulations and healthcare
+    scenarios indicates their potential broad applicability.
+\end{itemize}
+
+\section{Limitations}
+
+Despite the promising results, it's important to acknowledge the
+limitations of our approach:
+\begin{itemize}
+    \item \textbf{Prior Knowledge Requirement}: S-CTDG, while
+    highly effective, requires prior knowledge of the system
+    noise and the ability to perform counterfactual actions
+    during data collection. This may limit its applicability
+    in some real-world scenarios.
+    \item \textbf{Computational Complexity}: The generation of
+    counterfactual data, especially in complex environments,
+    can be computationally intensive.
+    \item \textbf{Generalization to Other Domains}: While our
+    methods showed success in the tested environments, their
+    effectiveness in other domains or more complex real-world
+    scenarios remains to be fully explored.
+\end{itemize}
+
+\section{Future Research Directions}
+
+Based on our findings and identified limitations,
+several avenues for future research emerge:
+\begin{itemize}
+    \item \textbf{Relaxing Prior Knowledge Requirements}: Investigating
+    methods to reduce the dependence on detailed prior knowledge of
+    system dynamics could broaden the applicability of S-CTDG.
+    \item \textbf{Scaling to More Complex Environments}: Exploring
+    the effectiveness of these frameworks in increasingly complex
+    and realistic environments would be valuable.
+    \item \textbf{Real-World Applications}: Applying these
+    techniques to real-world offline reinforcement learning problems
+    to validate their practical utility.
+    \item \textbf{Exploring Advanced ML Architectures}:
+    Investigating the integration of state-of-the-art machine
+    learning frameworks and structures, such as transformers
+    (introduced in \cite{vaswani2023attentionneed})
+    and diffusion models
+    (presented in \cite{sohldickstein2015deepunsupervisedlearningusing}),
+    into our counterfactual data generation approaches,
+    for instance:
+    \begin{itemize}
+        \item \textbf{Transformer}-based models, could improve the
+        capture of long-range dependencies in sequential data,
+        potentially leading to more coherent and realistic
+        counterfactual trajectories.
+        \item \textbf{Diffusion models} might offer a new approach
+        to generating high-quality counterfactual images, particularly
+        in visually complex environments like robotics simulations.
+    \end{itemize}
+\end{itemize}
+
+In conclusion, this thesis has demonstrated the potential of causal
+inference-based counterfactual data generation in addressing challenges
+of data scarcity and noise in offline reinforcement learning.
+While there are limitations to be addressed, the promising results
+open up exciting possibilities for future research and applications in
+this rapidly evolving field.

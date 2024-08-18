@@ -224,7 +224,8 @@ The number of transitions in the dataset was different for each environment:
 
 We used both WRe-CTDG and S-CTDG frameworks to generate counterfactual data.
 The augmentation factor $\alpha$ was set to 4, effectively quadrupling
-the size of the original datasets.
+the size of the original datasets,
+except on the Diabetes environment where $\delta = 8$ was used.
 Only a subset of the original dataset
 was used for generating counterfactual data.
 
@@ -241,7 +242,7 @@ Size of the augmented datasets:
     \item Acrobot: 10'000 $\times \, \alpha =$ 40'000 transitions 
     \item Half Cheetah: 10'000 $\times \, \alpha =$ 40'000 transitions
     \item Ant: 10'000 $\times \, \alpha =$ 40'000 transitions
-    \item Diabetes: 20 $\times \, \alpha =$ 80 transitions
+    \item Diabetes: 20 $\times \, \delta =$ 160 transitions
 \end{itemize}
 
 
@@ -251,7 +252,7 @@ We trained D3QN and TD3 algorithms on both the original and augmented datasets.
 The training process involved:
 
 \begin{itemize}
-    \item Number of training steps: 1'000 for Acrobot, 3'000 for Half Cheetah, 6'000 for Ant
+    \item Number of training steps: 1'000 for Acrobot, 2'000 for Half Cheetah, 3'000 for Ant, 8'000 for Diabetes
     \item Batch size: 256
     \item Discount factor ($\gamma$): 0.99
     \item Optimizer: Adam (learning rate: $1\times 10^{-4}$, $\beta_1$: 0.0, $\beta_2$: 0.9)
@@ -259,6 +260,79 @@ The training process involved:
 \end{itemize}
 
 \section{Results}
+
+\subsection{Training the Variational Autoencoder}
+
+We trained the VAE with each one of the three different image-based
+environments: Acrobot, Half Cheetah, and Ant.
+
+We trained the VAE using the Adam optimizer (learning rate: $1\times 10^{-4}$, $\beta_1$: 0.5, $\beta_2$: 0.9)
+and a batch size of 128. The model was trained for 10'000 iterations
+on the combined dataset from all three environments. We used the standard
+MSE loss for the reconstruction error with a weight mask
+to give less importance to the background pixels.
+
+
+Table \ref{tab:reconstruction_mse} presents the mean squared error (MSE) of the reconstruction loss for each environment after training:
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|c|}
+        \hline
+        \textbf{Environment} & \textbf{Reconstruction MSE} \\
+        \hline
+        Acrobot     & 1.364 \\
+        Half Cheetah & 13.539 \\
+        Ant         & 14.294 \\
+        \hline
+    \end{tabular}
+    \caption{Mean Squared Error (MSE) of reconstruction loss for each environment}
+    \label{tab:reconstruction_mse}
+\end{table}
+
+The VAE achieved a significantly lower reconstruction error on
+the Acrobot environment compared to Half Cheetah and Ant.
+This substantial difference in reconstruction capability is likely due
+to the simpler visual structure of Acrobot, while Half Cheetah and Ant
+present more complex visual features and dynamics.
+
+While a successful Acrobot reconstruction is shown
+in Figure \ref{fig:acrobot_recon},
+the poor reconstruction capability for Half Cheetah and Ant
+is visually demonstrated in Figures \ref{fig:half_cheetah_recon} and
+\ref{fig:ant_recon}, respectively.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.8\textwidth]{figures/ch5/ae_acrobot.png}
+    \caption{Acrobot Reconstruction}
+    \label{fig:acrobot_recon}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.8\textwidth]{figures/ch5/ae_half_cheetah.png}
+    \caption{Half Cheetah Reconstruction}
+    \label{fig:half_cheetah_recon}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.8\textwidth]{figures/ch5/ae_ant.png}
+    \caption{Ant Reconstruction}
+    \label{fig:ant_recon}
+\end{figure}
+
+
+These results indicate that while the VAE successfully learned to
+encode and reconstruct images from all three environments,
+its performance varied significantly across them. The high
+reconstruction errors and poor visual quality for Half Cheetah
+and Ant suggest that the current VAE architecture may not be
+optimal for capturing the complex visual features of these environments.
+This limitation, as we will see, could have potentially impacted the effectiveness
+of using these learned latent representations in the subsequent reinforcement
+learning algorithms, particularly for the more visually complex environments.
 
 \subsection{Reconstruction Loss During Generation}
 
@@ -276,99 +350,144 @@ as shown in Table \ref{tab:mae}.
     Acrobot              & 0.25189               & 0.00147             \\
     Half Cheetah         & 0.22064               & 0.03946             \\
     Ant                  & 0.27296               & 0.09391             \\
-    Diabetes             & 0.                    & 0.                  \\ \bottomrule
+    Diabetes             & 0.05602               & 0.12710             \\ \bottomrule
     \end{tabular}
 \caption{WRe-CTDG and S-CTDG Reconstruction Loss}
 \label{tab:mae}
 \end{table}
 
+The S-CTDG framework demonstrates superior reconstruction
+capabilities across all the image-based environments,
+as evidenced by the lower MAE values.
+To visually illustrate these reconstruction capabilities, we present a
+series of figures comparing original images to their S-CTDG reconstructions
+for each environment.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{figures/ch5/e2e_acro.png}
+    \caption{S-CTDG results for the Acrobot environment}
+    \label{fig:acrobot_recon}
+\end{figure}
+
+Figure \ref{fig:acrobot_recon} showcases the S-CTDG reconstruction
+for the Acrobot environment. The remarkably low MAE
+is reflected in the near-perfect visual fidelity of the reconstructed image,
+with virtually no discernible differences from the original.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{figures/ch5/e2e_half.png}
+    \caption{S-CTDG results for the Half Cheetah environment}
+    \label{fig:half_cheetah_recon}
+\end{figure}
+
+The Half Cheetah environment reconstruction,
+shown in Figure \ref{fig:half_cheetah_recon},
+demonstrates the S-CTDG's ability to capture complex articulated structures.
+With an MAE of 0.03946, the reconstruction still maintains
+the overall structure and positioning of the ant, with some loss of
+sharpness in the finer details of the legs and joints.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{figures/ch5/e2e_ant.png}
+    \caption{S-CTDG results for the Ant environment}
+    \label{fig:ant_recon}
+\end{figure}
+
+Figure \ref{fig:ant_recon} illustrates the S-CTDG reconstruction
+for the Ant environment. Despite the higher MAE of 0.09391 compared
+to the previous environments, the reconstruction still captures
+the essential features of the ant's body and limbs, albeit with
+some loss of detail and sharpness.
+
+For the Diabetes environment, as it doesn't involve image data, we do not provide a visual representation. However, it's worth noting that this is the only environment where WRe-CTDG outperforms S-CTDG in terms of MAE, likely due to the non-visual nature of the data.
+
 \subsection{Reinforcement Learning Performance}
 
 We evaluated the performance of D3QN and TD3 algorithms on both the
 original and augmented datasets. The results are presented
-in \ref{tab:rl_reward} for reward values and \ref{tab:rl_loss}
-for loss values: the reward value shown is the best reward
-over all the evaluation episodes and 
-the loss value is the loss at the time of the best reward.
+in \ref{tab:rl_reward}: the reward value shown is the best reward
+over all the evaluation episodes.
 
 \begin{table}[h]
     \centering
     \begin{tabular}{@{}llccc@{}}
         \toprule
-        \textbf{Environment} & \textbf{Algorithm} & \textbf{No Aug.} & \textbf{S-CTDG Aug.} & \textbf{wRE-CTDG Aug.} \\ \midrule
-        Acrobot              & D3QN               & -57.47           & -55.90                 & -53.35               \\
-        Half Cheetah         & TD3                & 8.19             & 208.25                 & 311.25               \\
-        Ant                  & TD3                & 67.33            & 180.78                 & 112.65               \\
-        Diabetes             & D3QN               & -0.              & -0.                    & -0.                  \\ \bottomrule
+        \textbf{Environment} & \textbf{Algorithm} & \textbf{No Aug.} & \textbf{WRe-CTDG Aug.} & \textbf{S-CTDG Aug.} \\ \midrule
+        Acrobot              & D3QN               & -57.47           & -53.35                 & -55.90               \\
+        Half Cheetah         & TD3                & 8.19             & 74.13                  & 256.09                \\
+        Ant                  & TD3                & 27.06            & 25.28                  & 168.54                 \\
+        Diabetes             & D3QN               & 0.04             & 0.06                   & 0.12                   \\ \bottomrule
     \end{tabular}
     \caption{Reinforcement Learning Best Reward Value}
     \label{tab:rl_reward}
 \end{table}
 
-\begin{table}[h]
-    \centering
-    \begin{tabular}{@{}llccc@{}}
-        \toprule
-        \textbf{Environment} & \textbf{Algorithm} & \textbf{No Aug.} & \textbf{S-CTDG Aug.} & \textbf{wRE-CTDG Aug.} \\ \midrule
-        Acrobot              & D3QN               & 0.01157          & 0.00371                & 0.00368              \\
-        Half Cheetah         & TD3                & 1.35503          & 2.81980                & 0.48767              \\
-        Ant                  & TD3                & -0.94156         & -1.34450               & -14.13370            \\
-        Diabetes             & D3QN               & -0.              & -0.                    & -0.                  \\ \bottomrule
-    \end{tabular}
-    \caption{Reinforcement Learning Loss Value during the Best Reward}
-    \label{tab:rl_loss}
-\end{table}
-
 In Figure \ref{fig:rew_acrobot} we show the reward trends for the
-Acrobot environment using D3QN, while in Figure \ref{fig:loss_acrobot}
-we show the loss trends for the same environment.
-In the case of Half Cheetah, we show the reward trends in
-Figure \ref{fig:rew_cheetah} and the loss trends in
-Figure \ref{fig:loss_cheetah}.
-The trends of reward and loss values for the Ant environment
-are shown in Figures \ref{fig:rew_ant} and \ref{fig:loss_ant} respectively.
-At last, the trends for the Diabetes environment are shown in
-Figures \ref{fig:rew_diabetes} and \ref{fig:loss_diabetes}.
+Acrobot environment using D3QN,
+in the case of Half Cheetah, we show the reward trends in
+Figure \ref{fig:rew_cheetah},
+the trends of reward values for the Ant environment
+are shown in Figures \ref{fig:rew_ant} and,
+at last, the reward trends for the Diabetes environment are shown in
+Figures \ref{fig:rew_diabetes}
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \includegraphics[width=.8\textwidth]{figures/ch5/rew_acrobot.png}
     \caption{Acrobot Reward Trends}
     \label{fig:rew_acrobot}
 \end{figure}
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=.8\textwidth]{figures/ch5/loss_acrobot.png}
-    \caption{Acrobot Loss Trends}
-    \label{fig:loss_acrobot}
-\end{figure}
-
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \includegraphics[width=.8\textwidth]{figures/ch5/rew_halfcheetah.png}
     \caption{Half Cheetah Reward Trends}
     \label{fig:rew_cheetah}
 \end{figure}
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=.8\textwidth]{figures/ch5/loss_halfcheetah.png}
-    \caption{Half Cheetah Loss Trends}
-    \label{fig:loss_cheetah}
-\end{figure}
-
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \includegraphics[width=.8\textwidth]{figures/ch5/rew_ant.png}
     \caption{Ant Reward Trends}
     \label{fig:rew_ant}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
-    \includegraphics[width=.8\textwidth]{figures/ch5/loss_ant.png}
-    \caption{Ant Loss Trends}
-    \label{fig:loss_ant}
+    \includegraphics[width=.8\textwidth]{figures/ch5/rew_diabetes.png}
+    \caption{Diabetes Reward Trends}
+    \label{fig:rew_diabetes}
 \end{figure}
 
+\section{Discussion and Analysis of Results}
+
+These findings underscore the potential of counterfactual data generation,
+especially S-CTDG, in enhancing the performance of reinforcement learning
+algorithms across a variety of tasks and environments.
+
+However, it is important to note that the effectiveness of S-CTDG
+comes with significant prerequisites and limitations:
+\begin{enumerate}
+    \item \textbf{Prior knowledge of system noise:} S-CTDG requires prior
+    knowledge of the noise affecting the system.
+    This assumption may not always hold in real-world scenarios,
+    where the exact nature and distribution of noise might be
+    unknown or difficult to model accurately.
+    \item \textbf{Ability to perform counterfactual actions:} The S-CTDG
+    method necessitates the ability to perform counterfactual actions during
+    the data collection process. This requirement can be challenging or
+    even impossible to meet in certain environments, particularly in
+    real-world applications where data collection might be constrained
+    by physical limitations, safety concerns, or ethical considerations.
+\end{enumerate}
+These constraints highlight an essential trade-off: while S-CTDG
+demonstrates superior performance in our experiments,
+its applicability may be limited to scenarios where we have
+detailed knowledge of the system dynamics and full control over
+the data collection process. In contrast, methods like WRe-CTDG,
+while generally less effective, may be more broadly applicable as
+they don't impose such strict requirements on the data collection
+process or prior knowledge of the system.

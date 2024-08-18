@@ -37,7 +37,7 @@ s_{t+1} = \{ \mathcal{S}_{t-(N_{\mathcal{S}-2})}, \ldots,
 \]
 
 In real-world scenarios, where comprehensive simulators are unavailable,
-the dataset \( \mathcal{D} \) may lack crucial experiences due
+the dataset \( \mathcal{D} \) may lack experience due
 to potential risks (e.g., collisions, patient harm) or high costs.
 This deficiency can prevent the agent's training and result in policies
 that are neither effective nor robust. Therefore, our goal is to \textbf{augment}
@@ -244,6 +244,10 @@ SCM of the form:
     \end{subfigure}
     \caption{SCMs and association rules.}
 \end{figure}
+
+We applied a gaussian
+noise $\sim \text{Normal}(\mu=0.01, \sigma=1)$ on the state at each timestep
+in all the robotic environments.
 
 \subsubsection{Acrobot}
 
@@ -512,8 +516,7 @@ a total of $2000$ subjects.
     \centering
     \includegraphics[width=.65\textwidth]{figures/ch4/diabetes2.png}
     \caption{Tree diagram of the expected numbers
-    (out of a total of 2000 subjects) along each
-    branch for the distribution from which the diabetes
+    along each branch for the distribution from which the diabetes
     dataset was generated.}
     \vspace{-10px}
     \caption*{\scriptsize{Source: \cite{sim2012}}}
@@ -539,7 +542,9 @@ the training of offline DRL agents.
 \subsection{Wasserstein Reward-enhanced CounTerfactual\\ Data Generation}
 \label{sec:wre}
 
-The first approach, called  focuses on inferring the Structural Causal Model
+The first approach, called Wasserstein Reward-enhanced Counterfactual Data Generation
+(WRe-CTDG),
+focuses on inferring the Structural Causal Model
 (SCM) from the available data \( \mathcal{D} \) and simultaneously learning
 a function to estimate the unobserved variables $U_{t+1}$.
 
@@ -806,7 +811,8 @@ algorithm, such as D3QN or TD3.
 \subsection{Supervised CounTerfactual Data Generation}
 \label{sec:sctdg}
 
-The second approach assumes that the noise in the system is known
+The second approach, called Supervised Counterfactual Data Generation (S-CTDG),
+assumes that the noise in the system is known
 in the training phase and focuses on directly collecting
 counterfactual states.
 
