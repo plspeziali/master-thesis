@@ -156,7 +156,7 @@ toolkit and based on the work of \cite{sutton1998}.
 Its inclusion provides
 a contrast to the more complex MuJoCo environments and
 allows us to test our methods on a wider range of
-control problems.piop
+control problems.
 
 In these robotics environments, we can consider
 various SCMs
@@ -498,7 +498,7 @@ Given this, the ``no unmeasured confounding'' assumption
 hold in this case.
 
 The return value given to the RL agent in this environment
-is the negative value of \( Y \) at the end of the simulation.
+is the reciprocal value of \( Y \) at the end of the simulation.
 
 This dataset captures key aspects of diabetes treatment, including:
 \begin{itemize}
@@ -542,7 +542,7 @@ the training of offline DRL agents.
 \subsection{Wasserstein Reward-enhanced CounTerfactual\\ Data Generation}
 \label{sec:wre}
 
-The first approach, called Wasserstein Reward-enhanced Counterfactual Data Generation
+The first approach, called \textbf{Wasserstein Reward-enhanced CounTerfactual Data Generation}
 (WRe-CTDG),
 focuses on inferring the Structural Causal Model
 (SCM) from the available data \( \mathcal{D} \) and simultaneously learning
@@ -796,7 +796,7 @@ algorithm, such as D3QN or TD3.
                 \If{CAE is used}{
                     $\hat{s}'_{t+1} \gets \text{decode last generated image in }\hat{s}'_{t+1} \text{ : } \, D_s(\hat{s}'_{t+1})$ \\ 
                 }
-                Insert $T' = (s_t, \hat{s}'_{t+1}, a'_t, \hat{r}_{t+1})$ in $B'$ \\
+                Insert $T' = (s_t, \hat{s}'_{t+1}, a'_t, \hat{r}'_{t+1})$ in $B'$ \\
             }
     
         Insert $B'$ in $\mathcal{D}'$ \\
@@ -811,18 +811,17 @@ algorithm, such as D3QN or TD3.
 \subsection{Supervised CounTerfactual Data Generation}
 \label{sec:sctdg}
 
-The second approach, called Supervised Counterfactual Data Generation (S-CTDG),
+The second approach, which is called \textbf{Supervised CounTerfactual Data Generation} (S-CTDG),
 assumes that the noise in the system is known
 in the training phase and focuses on directly collecting
 counterfactual states.
 
-This approach shifts the problem towards creating the most
-accurate and representative simulator, enhancing the
-realism and diversity of the generated experiences.
-It is particularly useful when there is access to detailed
-knowledge about the noise in the system,
-even in just a subset of the available data, enabling a more
-precise simulation of the environment.
+This approach is particularly useful when there is access to detailed
+knowledge about the noise in a subset of the available data,
+enabling a more precise simulation of the environment.
+The key condition is that the rest of the dataset with unobserved
+variables should exhibit similar noise behavior, allowing the model
+to generalize effectively.
 
 \begin{figure}[ht]
     \centering
