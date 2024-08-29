@@ -1,4 +1,4 @@
-\section{Data Scarcity and Noisy Datasets in Machine Learning}
+\section{Data Scarcity in Machine Learning}
 
 \textbf{Machine Learning} (ML) is reshaping our world in ways both
 subtle and profound. From the personalized recommendations we receive
@@ -20,7 +20,7 @@ physical interactions or rare events. This data scarcity can lead
 to underfitted or non-generalizable models, compromising their
 accuracy and utility in practical applications.
 
-Moreover, even when substantial datasets are available, they
+Moreover, they
 often suffer from \textbf{noise and inconsistencies}. Real-world data
 collection processes are rarely perfect, resulting in datasets
 that may contain outliers or biased samples, also due to unmeasured
@@ -31,6 +31,8 @@ with noisy datasets is particularly acute in offline
 \textbf{Deep Reinforcement Learning} (DRL) scenarios, where agents must learn
 optimal policies from pre-collected experiences without the ability
 to interact further with the environment.
+When working with noisy samples, it becomes difficult for the DRL algorithms to accurately estimate the underlying dynamics of the environment and the true reward function.
+Furthermore, in offline DRL, the fixed nature of the dataset means that errors or biases in the data cannot be corrected through additional exploration. This makes it crucial to develop robust methods that can effectively learn from imperfect datasets while mitigating the impact of noise and inconsistencies on the learned policies.
 
 To address these challenges, researchers have long employed
 \textbf{data augmentation techniques}. Traditional data augmentation

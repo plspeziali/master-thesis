@@ -123,8 +123,6 @@ and simultaneously learn a function to estimate
 \( U_{t+1} \) (see Subsection \ref{sec:wre}). Additionally, we investigated
 a method where the noise is known and counterfactual states are collected
 (see Subsection \ref{sec:sctdg}).
-This approach shifts the problem towards developing the most accurate and
-representative simulator.
 
 \section{Simulation Environments}
 
@@ -170,7 +168,7 @@ to capture the state-transition dynamics. For example:
     the first case, but the noise terms $U_{t+i}$ are independent
     among each other. Shown in Figure \ref{fig:scm2}.
     \item $S_{t+1} = f_s(S_t, A_t, U_{t+1})$, like on the
-    the first case, but $S_{t+1}$ is causally dependent on both $S_{t+1}$
+    the first case, but $S_{t+1}$ is causally dependent on both $S_{t-1}$
     and $S_t$. Shown in Figure \ref{fig:scm3}.
     \item $S_{t+1} = f_s(S_t, A_t, U_{t+1})$, like on the
     third case, but the noise terms $U_{t+i}$ are independent
@@ -212,7 +210,7 @@ of \textbf{d-separation} shown in Subsection \ref{sec:causal_models}.
 In Figure \ref{fig:scm-dep}, we present a visual representation
 of the d-separation rules for one of the SCMs considered in this work
 (these conditions hold for all the SCMs considered):
-since $S_{t-1}$, $A_{t-1}$ and $U_t$ are observed and conditioned upon
+since $S_{t-1}$, $A_{t-1}$ and $U_t$ are observed and conditioned upon,
 the flow of association given by their fork structure is blocked,
 the only way for $U_t$ to influence $S_t$ could be
 through their common child $S_{t+1}$, which is unobserved,
@@ -245,7 +243,7 @@ SCM of the form:
     \caption{SCMs and association rules.}
 \end{figure}
 
-We applied a gaussian
+We applied a
 noise $\sim \text{Normal}(\mu=0.01, \sigma=1)$ on the state at each timestep
 in all the robotic environments.
 
@@ -532,7 +530,7 @@ Both approaches aim to generate additional high-fidelity experiences
 that align with the environment's underlying transition dynamics
 but differ in their methodologies and assumptions.
 
-In the following subsections, we delve into the specifics
+In the following subsections, we'll explore the specifics
 of each approach, outlining their methodologies, advantages, and
 implementation details. This exploration aims to
 provide a comprehensive understanding of how these
@@ -596,7 +594,7 @@ the images \( \mathcal{I} \) in the collected dataset \( \mathcal{D} \):
 \end{equation}
 
 Minimizing this reconstruction error ensures that the encoder \( E_s \)
-computes robust and informative image encodings, and the decoder \( D_s \)
+computes robust and informative image encodings and the decoder \( D_s \)
 can accurately reconstruct images from these encodings.
 
 The encoder is used to encode the images representing the environment
@@ -714,7 +712,8 @@ Encoder $E_u$ consist exclusively of fully connected
 layers. This architecture is sufficient to handle
 the numerical input and effectively capture the dependencies
 in the data. However, when the state representation
-includes images, convolutional layers are incorporated
+includes images and the CAE is not employed,
+convolutional layers are incorporated
 into both the Generator and the Encoder:
 \begin{itemize}
     \item In the Encoder, the convolutional blocks perform a
@@ -883,8 +882,8 @@ counterfactual reward:
     \mathcal{L} = \mathbb{E} \left[ \left( \hat{\mathcal{S}}_{t+1,\, CF} - \mathcal{S}_{t+1,\, CF} \right)^2 \right] +
     \mathbb{E} \left[ \left( \hat{R}_{t+1,\, CF} - R_{t+1,\, CF} \right)^2 \right]
 \end{equation}
-where $\mathcal{S}$ represents the state as either a numerical vector
-or an image.
+where $\mathcal{S}$ represents the state as a numerical vector,
+an image vector or a multimodal vector.
 
 The S-CTDG model takes as input the current state $s_t$,
 the next state $s_{t+1}$, the original action $a_t$,
@@ -892,7 +891,7 @@ and the counterfactual action $a_t'$. It then produces a counterfactual
 next state $\hat{s}_{t+1}'$ and a counterfactual reward $\hat{r}_{t+1}'$.
 This process effectively allows the algorithm to ask ``what if?''
 questions about the environment, simulating alternative scenarios
-that didn't actually occur but could have occurred if different actions
+that could have occurred if different actions
 had been taken. 
 
 \subsubsection{Experience Generation through Counterfactual Augmentation}
@@ -902,7 +901,7 @@ we can utilize it for counterfactual data augmentation.
 The original dataset $\mathcal{D}$ is expanded by a factor of $\beta$
 according to the method described in Algorithm \ref{alg2}.
 For each sampled tuple
-$T = (s_t, s_{t+1}, a_t) \in \mathcal{D}$,
+$T = (s_t, s_{t+1}, a_t, r_t) \in \mathcal{D}$,
 the process is simplified compared to the WRe-CTDG method.
 Instead of separate encoding and generation steps,
 the S-CTDG model $G_{sup}$ directly generates the counterfactual
@@ -933,7 +932,7 @@ train any off-policy DRL algorithm, such as D3QN or TD3.
         Sample batch $B$ $\in \mathcal{D}$ \\
             $B' \gets \emptyset$ 
             
-            \ForEach{$ T = (s_t, s_{t+1}, a_t) \in B$}{
+            \ForEach{$ T = (s_t, s_{t+1}, a_t, r_t) \in B$}{
                 \textit{Action}: $a'_t \gets \text{choose random action} \neq a_t $ \\
                 \textit{Prediction}: $(\hat{s}'_{t+1}, \hat{r}'_{t+1}) \gets G_{sup} (s_t, s_{t+1}, a_t, a'_{t})$ \\
                 Insert $T' = (s_t, \hat{s}'_{t+1}, a'_t, \hat{r}_{t+1}')$ in $B'$ \\
