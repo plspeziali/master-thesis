@@ -1110,7 +1110,7 @@ of the population who received treatment \( t \). In contrast, an \textbf{interv
 (denoted with the \textbf{do-operator}) involves taking the entire population and
 giving everyone treatment \( t \).
 
-\textbf{Interventional distributions} such as \( P(Y \mid do(T = t)) \)
+\textbf{Interventional distributions} such as \( P(Y \mid \text{do}(T = t)) \)
 are conceptually quite different from the \textbf{observational distribution} \( P(Y) \)
 since the latter do not include the do-operator.
 Because of this, we can observe data from them without conducting any experiments.
@@ -1143,8 +1143,8 @@ If we intervene on a set of nodes \( S \subseteq [n] \)\footnote{We use \( [n] \
 
 The modularity assumption allows us to encode many different interventional
 distributions in a single graph. For example, it could be the case that
-\( P(Y) \), \( P(Y \mid do(T = t)) \), \( P(Y \mid do(T = t')) \), and
-\( P(Y \mid do(T_2 = t_2)) \) are all completely different distributions that
+\( P(Y) \), \( P(Y \mid \text{do}(T = t)) \), \( P(Y \mid \text{do}(T = t')) \), and
+\( P(Y \mid \text{do}(T_2 = t_2)) \) are all completely different distributions that
 share almost nothing. If this were the case, each of these distributions would
 need its own graph. However, by assuming modularity, we can encode them all
 with the same graph that we use to encode the joint \( P(Y, T, T_2, \ldots) \),
@@ -1179,7 +1179,7 @@ By conditioning on certain variables, we can block these paths and
 identify causal quantities like \( P(Y \mid \text{do}(T = t)) \).
 
 Our goal is to transform the causal estimand
-\( P(y \mid \textbf{do}(T = t)) \) into a statistical estimand
+\( P(y \mid \text{do}(T = t)) \) into a statistical estimand
 that relies only on the observational distribution.
 We start by assuming we have a set of variables \( W \) that satisfy
 the \textbf{backdoor criterion}:\\
@@ -1205,7 +1205,7 @@ interest (i.e., \( x \) such that \( P(X = x) > 0 \)),
 that \( W \) satisfies the backdoor criterion, and positivity, 
 we can identify the causal effect of \( T \) on \( Y \):
 \begin{equation}
-P(y \mid \textbf{do}(T = t)) = \sum_{w} P(y \mid T = t, W = w) P(w)
+P(y \mid \text{do}(T = t)) = \sum_{w} P(y \mid T = t, W = w) P(w)
 \end{equation}
 
 This theorem connects to \textbf{d-separation}.
